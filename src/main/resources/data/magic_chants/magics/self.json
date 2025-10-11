@@ -1,0 +1,16 @@
+{
+  "magics": [
+    {
+      "chant": "座標",
+      "steps": [
+        { "id": "magic_chants:magic_selfeyes" }
+      ]
+    },
+    {
+      "chant": "pos",
+      "steps": [
+        { "id": "magic_chants:magic_selfeyes" }
+      ]
+    }
+  ]
+}

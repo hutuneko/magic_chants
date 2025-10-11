@@ -1,0 +1,13 @@
+{
+  "magics": [
+    {
+      "triggers": [
+        { "type": "regex", "pattern": "^遅延(?<power>\\d+)$" },
+        { "type": "regex", "pattern": "^delay(?<power>\\d+)$" }
+      ],
+      "steps": [
+        { "id": "magic_chants:magic_delay", "argsFrom": { "power": "int" } }
+      ]
+    }
+  ]
+}

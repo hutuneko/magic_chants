@@ -1,0 +1,13 @@
+{
+  "magics": [
+    {
+      "triggers": [
+        { "type": "regex", "pattern": "^剣(?<uses>\\d+)$" },
+        { "type": "regex", "pattern": "^sword\\s*(?<uses>\\d+)$" }
+      ],
+      "steps": [
+        { "id": "magic_chants:magic_bind_sword", "argsFrom": { "uses": "int" } }
+      ]
+    }
+  ]
+}

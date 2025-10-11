@@ -1,0 +1,16 @@
+{
+  "magics": [
+    {
+      "chant": "雷",
+      "steps": [
+        { "id": "magic_chants:magic_thunder" }
+      ]
+    },
+    {
+      "chant": "thunder",
+      "steps": [
+        { "id": "magic_chants:magic_thunder" }
+      ]
+    }
+  ]
+}

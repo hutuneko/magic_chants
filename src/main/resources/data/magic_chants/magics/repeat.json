@@ -1,0 +1,13 @@
+{
+  "magics": [
+    {
+      "triggers": [
+        { "type": "regex", "pattern": "^増殖(?<times>\\d+)$" },
+        { "type": "regex", "pattern": "^repeat(?<times>\\d+)$" }
+      ],
+      "steps": [
+        { "id": "magic_chants:magic_repeat", "argsFrom": { "times": "int" } }
+      ]
+    }
+  ]
+}

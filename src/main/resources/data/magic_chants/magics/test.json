@@ -1,0 +1,12 @@
+{
+  "magics": [
+    {
+      "chant": "a",
+      "steps": [
+        { "id": "magic_chants:magic_selfeyes" },
+        { "id": "magic_chants:magic_repeat", "args": {"times": 30} },
+        { "id": "magic_chants:magic_thunder" }
+      ]
+    }
+  ]
+}
