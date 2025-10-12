@@ -1,5 +1,6 @@
 package com.hutuneko.magic_chants.api.magic;
 
+import com.hutuneko.magic_chants.api.player.attribute.magic_power.MPAPI;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
@@ -43,7 +44,7 @@ public final class MagicClassRegistry {
 //            return false;
 //        }
 //    }
-    public static boolean call(ResourceLocation id, MagicContext ctx, CompoundTag args) {
+    public static boolean call(ResourceLocation id, MagicContext ctx, CompoundTag args,float scorer) {
         Class<? extends BaseMagic> cls = TABLE.get(id);
         if (cls == null) {
             System.out.println("[MagicRegistry] NOT FOUND: " + id);
@@ -52,6 +53,7 @@ public final class MagicClassRegistry {
         try {
             BaseMagic inst = newInstance(cls, args);
             System.out.println("[MagicRegistry] RUN: " + id);
+            if (MPAPI.calculateMpCost(scorer, ctx))return false;
             inst.magic_content(ctx);
             return true;
         } catch (ReflectiveOperationException e) {

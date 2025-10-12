@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class MagicCast {
 
     private MagicCast() {}
-
+    private static float scorer;
     /* ===== ステップ表現 ===== */
 
     /** 実行ステップ（id + args）。args は Magic 固有の初期設定。 */
@@ -128,14 +128,14 @@ public final class MagicCast {
 
     /* ===== 実行ループ ===== */
 
-    private static void runUntilWaitOrEnd(Session s, @Nullable ServerPlayer player) {
+    private static void runUntilWaitOrEnd(Session s, ServerPlayer player) {
         MagicContext ctx = new MagicContext(s.level, player, s.bag);
         if (s.bag.get(Keys.POWER).isEmpty()) {
             System.out.println(0);
-            float a = (ChantScorer.score(s.bag.get(Keys.CHANT_RAW).orElse(null))) / 2;
-            ctx.data().put(Keys.POWER, a);
+            scorer = (ChantScorer.score(s.bag.get(Keys.CHANT_RAW).orElse(null),player)) / 2;
+            ctx.data().put(Keys.POWER, scorer);
             System.out.println("[DBG] POWER=" + s.bag.get(Keys.POWER));
-            System.out.printf("[MagicCast/ChantScore] '%s' -> %.2f (Power=%.2f)%n", s.bag.get(Keys.CHANT_RAW), a, a);
+            System.out.printf("[MagicCast/ChantScore] '%s' -> %.2f (Power=%.2f)%n", s.bag.get(Keys.CHANT_RAW), scorer, scorer);
         }
         while (s.index < s.steps.size()) {
             MagicCast.Step step = s.steps.get(s.index);
@@ -152,7 +152,7 @@ public final class MagicCast {
             ctx._setPeekRestSupplier(() ->
                     (nextIdx <= s.steps.size()) ? List.copyOf(s.steps.subList(nextIdx, s.steps.size()))
                             : List.of());
-            MagicClassRegistry.call(step.id(), ctx, safeArgs(step.args()));
+            MagicClassRegistry.call(step.id(), ctx, safeArgs(step.args()),scorer);
             s.index++;
 
             //Magic 側が enqueue した Step を i+1 に挿入

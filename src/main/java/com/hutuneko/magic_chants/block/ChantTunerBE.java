@@ -1,7 +1,6 @@
 package com.hutuneko.magic_chants.block;
 
 import com.hutuneko.magic_chants.ModRegistry;
-import com.hutuneko.magic_chants.api.block.gui.ChantTunerMenu;
 import com.hutuneko.magic_chants.api.chat.dictionary.IPlayerAliases;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

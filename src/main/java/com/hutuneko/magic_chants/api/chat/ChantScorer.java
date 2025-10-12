@@ -1,11 +1,14 @@
 package com.hutuneko.magic_chants.api.chat;
 
+import com.hutuneko.magic_chants.api.player.attribute.MagicAttributes;
+import net.minecraft.server.level.ServerPlayer;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ChantScorer {
 
-    public static float score(String chant) {
+    public static float score(String chant, ServerPlayer player) {
         if (chant == null || chant.isBlank()) return 0f;
 
         // 全角スペース・句読点・記号を区切りに正規化
@@ -27,7 +30,7 @@ public class ChantScorer {
 
         // ⑤ 架空語率（漢字・カタカナ・記号など）
         float fictionScore = (float) fictionScore(normalized);
-
+        float chantpower = (float) player.getAttributeValue(MagicAttributes.CHANT_POWER.get());
         // 総合スコア（重み平均）
         float finalScore = 10f * (
                 0.25f * repScore +
@@ -35,7 +38,7 @@ public class ChantScorer {
                         0.2f  * flowScore +
                         0.2f  * diversityScore +
                         0.1f  * fictionScore
-        );
+        ) * chantpower;
 
         return Math.round(finalScore * 10f) / 10f; // 小数1桁
     }
