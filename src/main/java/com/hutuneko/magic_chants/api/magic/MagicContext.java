@@ -32,10 +32,12 @@ public final class MagicContext {
     /* package */ void _setPeekNextSupplier(Supplier<MagicCast.Step> s) {
         this.peekNextSupplier = s;
     }
+
     /** 今の直後に来るStepを覗く（無ければnull） */
     public @Nullable MagicCast.Step peekNext() {
         return this.peekNextSupplier != null ? this.peekNextSupplier.get() : null;
     }
+
     /** 今の直後に差し込みたいStepを申請（複数OK・順序維持） */
     public void enqueueNext(MagicCast.Step step) {
         if (step != null) this.enqueueNext.add(step);

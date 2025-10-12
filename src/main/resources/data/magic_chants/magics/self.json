@@ -27,13 +27,13 @@
     {
       "chant": "座標",
       "steps": [
-        { "id": "magic_chants:magic_self" }
+        { "id": "magic_chants:magic_selfpos" }
       ]
     },
     {
       "chant": "pos",
       "steps": [
-        { "id": "magic_chants:magic_self" }
+        { "id": "magic_chants:magic_selfpos" }
       ]
     }
   ]

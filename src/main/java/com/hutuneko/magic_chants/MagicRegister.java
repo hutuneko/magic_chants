@@ -1,10 +1,7 @@
 package com.hutuneko.magic_chants;
 
 import com.hutuneko.magic_chants.api.magic.MagicClassRegistry;
-import com.hutuneko.magic_chants.magic.action.Magic_BindSword;
-import com.hutuneko.magic_chants.magic.action.Magic_Explosion;
-import com.hutuneko.magic_chants.magic.action.Magic_Power;
-import com.hutuneko.magic_chants.magic.action.Magic_Thunder;
+import com.hutuneko.magic_chants.magic.action.*;
 import com.hutuneko.magic_chants.magic.addition.Magic_DelayNext;
 import com.hutuneko.magic_chants.magic.addition.Magic_RepeatNext;
 import com.hutuneko.magic_chants.magic.addition.Magic_Target;
@@ -59,6 +56,10 @@ public class MagicRegister {
         MagicClassRegistry.registerSpell(
                 new ResourceLocation(Magic_chants.MODID, "magic_targetpos"),
                 Magic_TargetPos.class
+        );
+        MagicClassRegistry.registerSpell(
+                new ResourceLocation(Magic_chants.MODID, "magic_exhaustion"),
+                Magic_Exhaustion.class
         );
     }
 }

@@ -10,7 +10,6 @@ public class Magic_Thunder extends Magic {
     public void magic_content(MagicContext ctx) {
         var level = ctx.level();
         if (level.isClientSide()) return;
-
         var vec = ctx.data().get(Keys.POS)
                 .orElseGet(() -> ctx.player() != null ? ctx.player().position() : null);
         var bolt = EntityType.LIGHTNING_BOLT.create(level);
@@ -20,5 +19,4 @@ public class Magic_Thunder extends Magic {
         level.addFreshEntity(bolt);
         ctx.delayNext(1);
     }
-
 }

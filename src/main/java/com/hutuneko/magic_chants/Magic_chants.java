@@ -4,9 +4,7 @@ import com.hutuneko.magic_chants.api.net.MagicNetwork;
 import com.hutuneko.magic_chants.item.MagicItems;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
@@ -24,8 +22,6 @@ public class Magic_chants {
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.addListener(this::setup);
         ModRegistry.register(modEventBus);
-        // Register our mod's ForgeConfigSpec so that Forge can create and load the config file for us
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
     private void setup(final FMLCommonSetupEvent e) {
         e.enqueueWork(MagicNetwork::init);

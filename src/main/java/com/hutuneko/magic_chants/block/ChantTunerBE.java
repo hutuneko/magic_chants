@@ -21,6 +21,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +42,9 @@ public class ChantTunerBE extends BlockEntity implements MenuProvider {
         return Component.literal("Chant Tuner");
     }
 
+    @Nullable
     @Override public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player p) {
-        return new ChantTunerMenu(id, inv, this.worldPosition, List.copyOf(rules), items);
+        return new ChantTunerMenu(id, inv, this);
     }
 
     public List<IPlayerAliases.AliasRule> getRules() { return rules; }

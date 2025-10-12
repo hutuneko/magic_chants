@@ -1,83 +1,90 @@
 package com.hutuneko.magic_chants.api.block.gui;
 
-import com.hutuneko.magic_chants.api.block.net.C2S_ApplyAliasesFromTuner;
-import com.hutuneko.magic_chants.api.block.net.C2S_SaveAliasesFromTunerToItem;
-import com.hutuneko.magic_chants.api.net.MagicNetwork;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.Minecraft;
+
+import java.util.HashMap;
+
+import com.mojang.blaze3d.systems.RenderSystem;
 import org.jetbrains.annotations.NotNull;
 
-@OnlyIn(Dist.CLIENT)
 public class ChantTunerScreen extends AbstractContainerScreen<ChantTunerMenu> {
-    private EditBox area;
+    private final static HashMap<String, Object> guistate = ChantTunerMenu.guistate;
+    private final Level world;
+    private final int x, y, z;
+    private final Player entity;
+    EditBox a;
 
-    public ChantTunerScreen(ChantTunerMenu m, Inventory inv, Component title) {
-        super(m, inv, title);
-        this.imageWidth = 248;
-        this.imageHeight = 186; // 少し高さUP（ボタン3つ分）
+    public ChantTunerScreen(ChantTunerMenu container, Inventory inventory, Component text) {
+        super(container, inventory, text);
+        this.world = container.world;
+        this.x = container.x;
+        this.y = container.y;
+        this.z = container.z;
+        this.entity = container.entity;
+        this.imageWidth = 390;
+        this.imageHeight = 240;
+    }
+
+    private static final ResourceLocation texture = new ResourceLocation("a:textures/screens/chant_tuner.png");
+
+    @Override
+    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        this.renderBackground(guiGraphics);
+        super.render(guiGraphics, mouseX, mouseY, partialTicks);
+        a.render(guiGraphics, mouseX, mouseY, partialTicks);
+        this.renderTooltip(guiGraphics, mouseX, mouseY);
     }
 
     @Override
-    protected void init() {
-        super.init();
+    protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int gx, int gy) {
+        RenderSystem.setShaderColor(1, 1, 1, 1);
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        guiGraphics.blit(texture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
 
-        // テキストエリア（1行=1ルール: type|priority|from|to）
-        area = new EditBox(this.font, leftPos + 8, topPos + 20, 232, 110, Component.empty());
-        StringBuilder sb = new StringBuilder();
-        for (var r : this.menu.snapshot) {
-            sb.append(r.type()).append('|')
-                    .append(r.priority()).append('|')
-                    .append(r.from()).append('|')
-                    .append(r.to()).append('\n');
+        guiGraphics.blit(new ResourceLocation("magic_chants:textures/screens/chant_tuner.png"), this.leftPos, this.topPos + 41, 0, 0, 390, 240, 390, 240);
+
+        RenderSystem.disableBlend();
+    }
+
+    @Override
+    public boolean keyPressed(int key, int b, int c) {
+        if (key == 256) {
+            this.minecraft.player.closeContainer();
+            return true;
         }
-        area.setValue(sb.toString());
-        addRenderableWidget(area);
+        if (a.isFocused())
+            return a.keyPressed(key, b, c);
+        return super.keyPressed(key, b, c);
+        }
 
-        // 自分に適用
-        addRenderableWidget(
-                Button.builder(Component.literal("自分に適用"), b ->
-                        MagicNetwork.CHANNEL.sendToServer(
-                                new C2S_ApplyAliasesFromTuner(this.menu.pos, area.getValue(), false)
-                        )
-                ).bounds(leftPos + 8, topPos + 140, 110, 20).build()
-        );
-
-        // ブロックに保存
-        addRenderableWidget(
-                Button.builder(Component.literal("ブロックに保存"), b ->
-                        MagicNetwork.CHANNEL.sendToServer(
-                                new C2S_ApplyAliasesFromTuner(this.menu.pos, area.getValue(), true)
-                        )
-                ).bounds(leftPos + 130, topPos + 140, 110, 20).build()
-        );
-
-        // ★ アイテムに保存（BEスロット0のアイテムへ）
-        addRenderableWidget(
-                Button.builder(Component.literal("アイテムに保存"), b ->
-                        MagicNetwork.CHANNEL.sendToServer(
-                                new C2S_SaveAliasesFromTunerToItem(this.menu.pos, area.getValue())
-                        )
-                ).bounds(leftPos + 8, topPos + 164, 232, 20).build()
-        );
+    @Override
+    public void containerTick() {
+        super.containerTick();
+        a.tick();
     }
 
     @Override
-    protected void renderBg(@NotNull GuiGraphics g, float partialTick, int mouseX, int mouseY) {
-        // テクスチャが無ければ無地でOK。用意していれば g.blit(...) で貼る
+    public void resize(@NotNull Minecraft minecraft, int width, int height) {
+        String aValue = a.getValue();
+        super.resize(minecraft, width, height);
+        a.setValue(aValue);
     }
 
     @Override
-    public void render(@NotNull GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        this.renderBackground(g);
-        super.render(g, mouseX, mouseY, partialTick);
-        g.drawCenteredString(this.font, Component.literal("Chant Tuner"),
-                leftPos + this.imageWidth / 2, topPos + 6, 0xFFFFFF);
-        this.renderTooltip(g, mouseX, mouseY);
+        protected void renderLabels(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY) {
+    }
+
+    @Override
+    public void init() {
+        super.init();
     }
 }

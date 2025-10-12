@@ -12,8 +12,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
-public class TestItem extends Item {
-    public TestItem(Properties properties) {
+public class MagicWandItem extends Item {
+    public MagicWandItem(Properties properties) {
         super(properties);
     }
 
@@ -22,12 +22,11 @@ public class TestItem extends Item {
         ItemStack stack = player.getItemInHand(hand);
         var uuid = ChantItemUtil.ensureUuid(stack);
         if (!level.isClientSide && player instanceof ServerPlayer sp) {
-            MagicChatServer.setCurrent(sp, uuid, hand,stack); // ← サーバのマップに保存
+            MagicChatServer.setCurrent(sp, uuid, hand,stack);
         }
         if (level.isClientSide) {
-            MagicChatHook.openMagicChatSession(uuid,hand,stack); // 既存の開き方でOK
+            MagicChatHook.openMagicChatSession(uuid,hand,stack);
         }
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
     }
-
 }

@@ -145,7 +145,6 @@ public final class MagicCast {
                 s.waitToken = step.args().getString("_wait_token");
                 return;
             }
-
             //直後を覗く supplier をセット
             int nextIdx = s.index + 1;
             ctx._setPeekNextSupplier(() -> nextIdx < s.steps.size() ? s.steps.get(nextIdx) : null);

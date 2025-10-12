@@ -29,17 +29,6 @@ public class ChantTunerMenu extends AbstractContainerMenu {
         this.pos = pos;
         this.snapshot = serverRules;
         this.handler = handler;
-//
-//        // ★ BEスロット（X,Y はGUIに合わせて調整）
-//        this.addSlot(new SlotItemHandler(handler, 0, 12, 20));
-//
-//        // プレイヤーインベントリ
-//        final int xBase = 8, yBase = 84;
-//        for (int row = 0; row < 3; ++row)
-//            for (int col = 0; col < 9; ++col)
-//                this.addSlot(new Slot(inv, col + row * 9 + 9, xBase + col * 18, yBase + row * 18));
-//        for (int hot = 0; hot < 9; ++hot)
-//            this.addSlot(new Slot(inv, hot, xBase + hot * 18, yBase + 58));
     }
 
     // ★ クライアント（MenuType factory）
