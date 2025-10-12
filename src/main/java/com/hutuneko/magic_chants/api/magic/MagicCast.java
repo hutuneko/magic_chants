@@ -50,11 +50,12 @@ public final class MagicCast {
         @Nullable String waitToken;
 
         Session(ServerLevel lvl, @Nullable ServerPlayer p, List<Step> steps,
-                @Nullable DataBag initialBag, int timeoutTicks) {
+                @Nullable DataBag initialBag, int timeoutTicks,String raw) {
             this.playerId = (p != null ? p.getUUID() : new UUID(0, 0));
             this.level = lvl;
             this.steps = List.copyOf(steps);
             this.bag = (initialBag != null) ? initialBag : new DataBag();
+            this.bag.put(Keys.CHANT_RAW, raw);
             this.index = 0;
             long now = lvl.getServer().getTickCount();
             this.deadline = (timeoutTicks > 0) ? now + timeoutTicks : Long.MAX_VALUE;
@@ -77,8 +78,9 @@ public final class MagicCast {
                                   String string) {
         Objects.requireNonNull(level, "level");
         Objects.requireNonNull(steps, "steps");
-        Session s = new Session(level, player, steps, initialBag, timeoutTicks);
+        Session s = new Session(level, player, steps, initialBag, timeoutTicks, string);
         SESSIONS.put(s.playerId, s);
+        System.out.println("[MagicCast] start steps=" + s.steps.size());
         ensureTicker(level.getServer());
         runUntilWaitOrEnd(s, player);
     }
@@ -129,12 +131,11 @@ public final class MagicCast {
     private static void runUntilWaitOrEnd(Session s, @Nullable ServerPlayer player) {
         MagicContext ctx = new MagicContext(s.level, player, s.bag);
         if (s.bag.get(Keys.POWER).isEmpty()) {
-            s.bag.get(Keys.CHANT_RAW).ifPresent(raw -> {
-                double score = ChantScorer.score(raw);           // 0..10
-                double power = Math.max(1.0, Math.min(10.0, score / 2.0)); // 例: 0..5 に圧縮→1..10にクランプ調整OK
-                s.bag.put(Keys.POWER, power);
-                System.out.printf("[MagicCast/ChantScore] '%s' -> %.2f (Power=%.2f)%n", raw, score, power);
-            });
+            System.out.println(0);
+            float a = (ChantScorer.score(s.bag.get(Keys.CHANT_RAW).orElse(null))) / 2;
+            ctx.data().put(Keys.POWER, a);
+            System.out.println("[DBG] POWER=" + s.bag.get(Keys.POWER));
+            System.out.printf("[MagicCast/ChantScore] '%s' -> %.2f (Power=%.2f)%n", s.bag.get(Keys.CHANT_RAW), a, a);
         }
         while (s.index < s.steps.size()) {
             MagicCast.Step step = s.steps.get(s.index);
@@ -169,6 +170,7 @@ public final class MagicCast {
             System.out.println("[MagicCast] delay=" + delay);
             if (delay > 0) {
                 s.resumeGameTime = s.level.getServer().getTickCount() + delay;
+                System.out.println("[MagicCast] scheduled resume at " + s.resumeGameTime);
                 return;
             }
             if (ctx._consumeCancelRequest()) {
@@ -211,6 +213,7 @@ public final class MagicCast {
                 if (s.resumeGameTime > 0L && now >= s.resumeGameTime) {
                     s.resumeGameTime = 0L;
                     ServerPlayer sp = s.level.getServer().getPlayerList().getPlayer(s.playerId);
+                    System.out.println("[MagicCast] resume for " + s.playerId + " at tick " + now);
                     runUntilWaitOrEnd(s, sp);
                 }
             }

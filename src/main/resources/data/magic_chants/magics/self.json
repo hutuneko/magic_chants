@@ -1,15 +1,39 @@
 {
   "magics": [
     {
-      "chant": "座標",
+      "chant": "視線",
       "steps": [
         { "id": "magic_chants:magic_selfeyes" }
       ]
     },
     {
-      "chant": "pos",
+      "chant": "eyespos",
       "steps": [
         { "id": "magic_chants:magic_selfeyes" }
+      ]
+    },
+    {
+      "chant": "自分",
+      "steps": [
+        { "id": "magic_chants:magic_self" }
+      ]
+    },
+    {
+      "chant": "self",
+      "steps": [
+        { "id": "magic_chants:magic_self" }
+      ]
+    },
+    {
+      "chant": "座標",
+      "steps": [
+        { "id": "magic_chants:magic_self" }
+      ]
+    },
+    {
+      "chant": "pos",
+      "steps": [
+        { "id": "magic_chants:magic_self" }
       ]
     }
   ]

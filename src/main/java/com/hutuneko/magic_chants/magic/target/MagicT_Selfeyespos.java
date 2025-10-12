@@ -7,9 +7,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 
-public class MagicT_Selfeyes extends Magic {
-    public MagicT_Selfeyes() {}
-    public MagicT_Selfeyes(CompoundTag args) {
+public class MagicT_Selfeyespos extends Magic {
+    public MagicT_Selfeyespos() {}
+    public MagicT_Selfeyespos(CompoundTag args) {
         if (args.contains("reach")) this.reach = args.getDouble("reach");
     }
     private double reach = 64.0;

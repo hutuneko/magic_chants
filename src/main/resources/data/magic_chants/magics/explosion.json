@@ -1,12 +1,12 @@
 {
   "magics": [
     {
-      "triggers": [
-        { "type": "regex", "pattern": "^爆破(?<power>\\d+)$" },
-        { "type": "regex", "pattern": "^explosion(?<power>\\d+)$" }
+      "chant": [
+        { "type": "regex", "pattern": "爆破" },
+        { "type": "regex", "pattern": "explosion" }
       ],
       "steps": [
-        { "id": "magic_chants:magic_explosion", "argsFrom": { "power": "int" } }
+        { "id": "magic_chants:magic_explosion" }
       ]
     }
   ]

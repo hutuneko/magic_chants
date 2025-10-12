@@ -12,8 +12,8 @@ public class Magic_RepeatNext extends Magic {
 
     public Magic_RepeatNext() {}
     public Magic_RepeatNext(CompoundTag args) {
-        if (args != null && args.contains("times")) {
-            this.times = Mth.clamp(args.getInt("times"), 1, 64);
+        if (args != null && args.contains("power")) {
+            this.times = Mth.clamp(args.getInt("power"), 1, 64);
         }
     }
 

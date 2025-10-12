@@ -3,10 +3,15 @@ package com.hutuneko.magic_chants;
 import com.hutuneko.magic_chants.api.magic.MagicClassRegistry;
 import com.hutuneko.magic_chants.magic.action.Magic_BindSword;
 import com.hutuneko.magic_chants.magic.action.Magic_Explosion;
+import com.hutuneko.magic_chants.magic.action.Magic_Power;
 import com.hutuneko.magic_chants.magic.action.Magic_Thunder;
 import com.hutuneko.magic_chants.magic.addition.Magic_DelayNext;
 import com.hutuneko.magic_chants.magic.addition.Magic_RepeatNext;
-import com.hutuneko.magic_chants.magic.target.MagicT_Selfeyes;
+import com.hutuneko.magic_chants.magic.addition.Magic_Target;
+import com.hutuneko.magic_chants.magic.addition.Magic_TargetPos;
+import com.hutuneko.magic_chants.magic.target.MagicT_Self;
+import com.hutuneko.magic_chants.magic.target.MagicT_Selfeyespos;
+import com.hutuneko.magic_chants.magic.target.MagicT_Selfpos;
 import net.minecraft.resources.ResourceLocation;
 
 public class MagicRegister {
@@ -21,7 +26,7 @@ public class MagicRegister {
         );
         MagicClassRegistry.registerSpell(
                 new ResourceLocation(Magic_chants.MODID, "magic_selfeyes"),
-                MagicT_Selfeyes.class
+                MagicT_Selfeyespos.class
         );
         MagicClassRegistry.registerSpell(
                 new ResourceLocation(Magic_chants.MODID, "magic_repeat"),
@@ -33,6 +38,27 @@ public class MagicRegister {
         );
         MagicClassRegistry.registerSpell(
                 new ResourceLocation(Magic_chants.MODID, "magic_bind_sword"),
-                Magic_BindSword.class);
+                Magic_BindSword.class
+        );
+        MagicClassRegistry.registerSpell(
+                new ResourceLocation(Magic_chants.MODID, "magic_power"),
+                Magic_Power.class
+        );
+        MagicClassRegistry.registerSpell(
+                new ResourceLocation(Magic_chants.MODID, "magic_target"),
+                Magic_Target.class
+        );
+        MagicClassRegistry.registerSpell(
+                new ResourceLocation(Magic_chants.MODID, "magic_self"),
+                MagicT_Self.class
+        );
+        MagicClassRegistry.registerSpell(
+                new ResourceLocation(Magic_chants.MODID, "magic_selfpos"),
+                MagicT_Selfpos.class
+        );
+        MagicClassRegistry.registerSpell(
+                new ResourceLocation(Magic_chants.MODID, "magic_targetpos"),
+                Magic_TargetPos.class
+        );
     }
 }
