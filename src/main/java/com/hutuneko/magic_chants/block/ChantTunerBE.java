@@ -8,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -44,7 +45,7 @@ public class ChantTunerBE extends BlockEntity implements MenuProvider {
 
     @Nullable
     @Override public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player p) {
-        return new ChantTunerMenu(id, inv, this);
+        return new ChantTunerMenu(id, inv, this,p);
     }
 
     public List<IPlayerAliases.AliasRule> getRules() { return rules; }
