@@ -25,5 +25,4 @@ public class Magic_Power extends Magic {
         }
 
     }
-
 }
