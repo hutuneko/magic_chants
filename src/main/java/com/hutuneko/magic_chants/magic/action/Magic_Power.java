@@ -17,7 +17,7 @@ public class Magic_Power extends Magic {
         power = p;
         var level = ctx.level();
         if (level.isClientSide()) return;
-        var entity = level.getEntity(ctx.data().get(Keys.TARGET_UUID).orElseGet(null));
+        var entity = level.getEntity(ctx.data().get(Keys.TARGET_UUID).orElse(null));
         if (entity == null) return;
         if (entity instanceof LivingEntity living) {
             System.out.println(power);
