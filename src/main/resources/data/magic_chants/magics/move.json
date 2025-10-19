@@ -1,0 +1,16 @@
+{
+  "magics": [
+    {
+      "chant": "移動",
+      "steps": [
+        { "id": "magic_chants:magic_move" }
+      ]
+    },
+    {
+      "chant": "move",
+      "steps": [
+        { "id": "magic_chants:magic_move" }
+      ]
+    }
+  ]
+}
