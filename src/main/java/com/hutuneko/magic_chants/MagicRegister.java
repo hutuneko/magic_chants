@@ -61,5 +61,13 @@ public class MagicRegister {
                 new ResourceLocation(Magic_chants.MODID, "magic_exhaustion"),
                 Magic_Exhaustion.class
         );
+        MagicClassRegistry.registerSpell(
+                new ResourceLocation(Magic_chants.MODID, "magic_move"),
+                Magic_Move.class
+        );
+        MagicClassRegistry.registerSpell(
+                new ResourceLocation(Magic_chants.MODID, "magic_teleport"),
+                Magic_Teleport.class
+        );
     }
 }

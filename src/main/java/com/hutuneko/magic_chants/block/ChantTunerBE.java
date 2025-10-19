@@ -1,13 +1,13 @@
 package com.hutuneko.magic_chants.block;
 
 import com.hutuneko.magic_chants.ModRegistry;
+import com.hutuneko.magic_chants.api.block.gui.ChantTunerMenu;
 import com.hutuneko.magic_chants.api.chat.dictionary.IPlayerAliases;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -44,7 +44,7 @@ public class ChantTunerBE extends BlockEntity implements MenuProvider {
 
     @Nullable
     @Override public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player p) {
-        return new ChantTunerMenu(id, inv, this,p);
+        return new ChantTunerMenu(id, inv, p);
     }
 
     public List<IPlayerAliases.AliasRule> getRules() { return rules; }

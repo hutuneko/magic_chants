@@ -1,0 +1,16 @@
+{
+  "magics": [
+    {
+      "chant": "テレポート",
+      "steps": [
+        { "id": "magic_chants:magic_teleport" }
+      ]
+    },
+    {
+      "chant": "teleport",
+      "steps": [
+        { "id": "magic_chants:magic_teleport" }
+      ]
+    }
+  ]
+}

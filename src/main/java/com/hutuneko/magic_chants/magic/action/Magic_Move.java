@@ -26,6 +26,6 @@ public class Magic_Move extends Magic {
         var hit = level.clip(new ClipContext(
                 eye, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.ANY, entity));
         Vec3 tgt = (hit.getType() != HitResult.Type.MISS) ? hit.getLocation() : end;
-        entity.move(MoverType.SELF,tgt);
+        entity.teleportTo(tgt.x, tgt.y, tgt.z);
     }
 }

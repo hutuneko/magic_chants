@@ -10,7 +10,6 @@ import net.minecraftforge.fml.common.Mod;
 public class AttributeEvents {
     @SubscribeEvent
     public static void onEntityAttributeModification(EntityAttributeModificationEvent event) {
-        event.add(EntityType.PLAYER, MagicAttributes.MAGIC_POWER.get());
         event.add(EntityType.PLAYER, MagicAttributes.CHANT_POWER.get());
     }
 }

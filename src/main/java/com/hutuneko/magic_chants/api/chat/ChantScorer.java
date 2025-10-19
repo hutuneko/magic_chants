@@ -9,11 +9,14 @@ import java.util.stream.Collectors;
 public class ChantScorer {
 
     public static float score(String chant, ServerPlayer player) {
-        if (chant == null || chant.isBlank()) return 0f;
+        if (chant == null || chant.isBlank()){
+            return 0f;
+        }
 
         // 全角スペース・句読点・記号を区切りに正規化
         String normalized = chant.replaceAll("[、。・.,;!?！？　]", " ").trim();
         String[] words = normalized.split("\\s+");
+
         if (words.length == 0) return 0f;
 
         // ① 繰り返し率（多いほどリズム感）
@@ -39,7 +42,6 @@ public class ChantScorer {
                         0.2f  * diversityScore +
                         0.1f  * fictionScore
         ) * chantpower;
-
         return Math.round(finalScore * 10f) / 10f; // 小数1桁
     }
 

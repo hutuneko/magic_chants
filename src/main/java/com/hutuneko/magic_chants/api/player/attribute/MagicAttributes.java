@@ -18,6 +18,6 @@ public class MagicAttributes {
                             .setSyncable(true));
     public static final RegistryObject<Attribute> CHANT_POWER =
             ATTRIBUTES.register("chant_power", () ->
-                    new RangedAttribute("attribute.name.magic_chants.chant_power", 0.0D, 0.0D, 1024.0D)
+                    new RangedAttribute("attribute.name.magic_chants.chant_power", 1.0D, 0.0D, 1024.0D)
                             .setSyncable(true));
 }

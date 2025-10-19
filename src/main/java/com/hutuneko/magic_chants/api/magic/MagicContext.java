@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public final class MagicContext {
+    private int rank;
     private final ServerLevel level;
     @Nullable private final ServerPlayer player;
     private final DataBag data;
