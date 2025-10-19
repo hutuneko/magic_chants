@@ -43,7 +43,7 @@ public final class ModRegistry {
 
     // メニュー（コンテナ）
     public static final RegistryObject<MenuType<ChantTunerMenu>> CHANT_TUNER_MENU =
-            MENUS.register("chant_tuner", () -> IForgeMenuType.create(ChantTunerMenu::new));
+            MENUS.register("chant_tuner", () -> IForgeMenuType.create(ChantTunerMenu::fromNetwork));
 
     public static void register(IEventBus bus) {
         BLOCKS.register(bus);

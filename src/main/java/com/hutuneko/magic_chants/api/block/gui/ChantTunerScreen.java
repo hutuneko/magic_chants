@@ -33,7 +33,7 @@ public class ChantTunerScreen extends AbstractContainerScreen<ChantTunerMenu> {
         this.imageHeight = 240;
     }
 
-    private static final ResourceLocation texture = new ResourceLocation("a:textures/screens/chant_tuner.png");
+    private static final ResourceLocation texture = new ResourceLocation("magic_chants:textures/screens/chant_tuner.png");
 
     @Override
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
@@ -50,7 +50,7 @@ public class ChantTunerScreen extends AbstractContainerScreen<ChantTunerMenu> {
         RenderSystem.defaultBlendFunc();
         guiGraphics.blit(texture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
 
-        guiGraphics.blit(new ResourceLocation("magic_chants:textures/screens/chant_tuner.png"), this.leftPos, this.topPos + 41, 0, 0, 390, 240, 390, 240);
+        guiGraphics.blit(new ResourceLocation("magic_chants:textures/screens/chant_tuner.png"), this.leftPos, this.topPos, 0, 0, 390, 240, 390, 240);
 
         RenderSystem.disableBlend();
     }
@@ -86,5 +86,18 @@ public class ChantTunerScreen extends AbstractContainerScreen<ChantTunerMenu> {
     @Override
     public void init() {
         super.init();
+
+        // EditBox を初期化
+        this.a = new EditBox(this.font, this.leftPos + 10, this.topPos + 10, 150, 20, Component.literal("詠唱を入力"));
+        this.a.setMaxLength(50);
+        this.a.setVisible(true);
+        this.a.setTextColor(0xFFFFFF);
+
+        // GUI に追加
+        this.addRenderableWidget(this.a);
+
+        // 必要に応じて guistate に登録
+        guistate.put("text:a", a);
     }
+
 }

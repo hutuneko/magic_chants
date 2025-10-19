@@ -1,9 +1,9 @@
 package com.hutuneko.magic_chants.api.player.attribute.magic_power.gui;
 
 import com.hutuneko.magic_chants.Magic_chants;
-import com.hutuneko.magic_chants.api.player.attribute.MagicAttributes;
+import com.hutuneko.magic_chants.api.player.attribute.magic_power.MagicPowerProvider;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
@@ -13,20 +13,17 @@ import net.minecraftforge.fml.common.Mod;
 // ClientOverlays.java
 @Mod.EventBusSubscriber(modid = Magic_chants.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ClientOverlays {
-
+    private static double mp;
     @SubscribeEvent
     public static void onRegisterOverlays(RegisterGuiOverlaysEvent e) {
-        // フードバーの上に重ねて描画
         e.registerAbove(VanillaGuiOverlay.FOOD_LEVEL.id(), "attr_display", (gui, graphics, partialTick, screenWidth, screenHeight) -> {
             Minecraft mc = Minecraft.getInstance();
-            LocalPlayer player = mc.player;
+            Player player = mc.player;
             if (player == null) return;
 
-            // Attribute の現在値を取得（setSyncable(true) 必須）
-            double val = player.getAttributeValue(MagicAttributes.MAGIC_POWER.get()); // 例: 独自属性
-
+            player.getCapability(MagicPowerProvider.MAGIC_POWER).ifPresent(cap -> mp = cap.getMP());
             // 表示内容を整形（整数/小数は好みで）
-            String text = "MP: " + (int) Math.round(val);
+            String text = "MP: " + (int) Math.round(mp);
 
             // フードバーの位置に合わせて座標算出（右下寄り）
             int x = screenWidth / 2 + 91;   // フードバー基準

@@ -80,6 +80,7 @@ public final class MagicCast {
         Objects.requireNonNull(steps, "steps");
         Session s = new Session(level, player, steps, initialBag, timeoutTicks, string);
         SESSIONS.put(s.playerId, s);
+        System.out.println("[MagicCast] start chant=" + s.bag.get(Keys.CHANT_RAW));
         System.out.println("[MagicCast] start steps=" + s.steps.size());
         ensureTicker(level.getServer());
         runUntilWaitOrEnd(s, player);
@@ -131,7 +132,6 @@ public final class MagicCast {
     private static void runUntilWaitOrEnd(Session s, ServerPlayer player) {
         MagicContext ctx = new MagicContext(s.level, player, s.bag);
         if (s.bag.get(Keys.POWER).isEmpty()) {
-            System.out.println(0);
             scorer = (ChantScorer.score(s.bag.get(Keys.CHANT_RAW).orElse(null),player)) / 2;
             ctx.data().put(Keys.POWER, scorer);
             System.out.println("[DBG] POWER=" + s.bag.get(Keys.POWER));

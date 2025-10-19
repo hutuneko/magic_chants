@@ -3,6 +3,7 @@ package com.hutuneko.magic_chants.api.net;
 import com.hutuneko.magic_chants.api.block.net.C2S_ApplyAliasesFromTuner;
 import com.hutuneko.magic_chants.api.chat.item.dictionary.C2S_ApplyAliasesToItem;
 import com.hutuneko.magic_chants.api.chat.net.C2S_CommitMagicPacket;
+import com.hutuneko.magic_chants.api.player.attribute.magic_power.net.S2C_SyncMagicPowerPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
@@ -44,6 +45,12 @@ public final class MagicNetwork {
                 .decoder(C2S_ApplyAliasesToItem::decode)
                 .consumerMainThread(C2S_ApplyAliasesToItem::handle)
                 .add();
+        CHANNEL.messageBuilder(S2C_SyncMagicPowerPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(S2C_SyncMagicPowerPacket::encode)
+                .decoder(S2C_SyncMagicPowerPacket::decode)
+                .consumerMainThread(S2C_SyncMagicPowerPacket::handle)
+                .add();
+
 
         System.out.println("[MagicNetwork] Registered " + id + " packets.");
     }

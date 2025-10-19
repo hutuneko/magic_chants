@@ -53,7 +53,7 @@ public final class MagicClassRegistry {
         try {
             BaseMagic inst = newInstance(cls, args);
             System.out.println("[MagicRegistry] RUN: " + id);
-            if (MPAPI.calculateMpCost(scorer, ctx))return false;
+            if (!(MPAPI.calculateMpCost(scorer, ctx)))return false;
             inst.magic_content(ctx);
             return true;
         } catch (ReflectiveOperationException e) {
