@@ -1,5 +1,8 @@
 package com.hutuneko.magic_chants.api.chat.item;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.UUID;
@@ -7,13 +10,27 @@ import java.util.UUID;
 public final class ChantItemUtil {
     private ChantItemUtil(){}
 
-    private static final String KEY_UUID  = "magic_chants:item_uuid";
+    public static final String KEY_UUID  = "magic_chants:item_uuid";
 
     /** アイテムにUUIDを付与（既にあればそれを返す） */
     public static UUID ensureUuid(ItemStack stack){
         var tag = stack.getOrCreateTag();
         if (!tag.hasUUID(KEY_UUID)) tag.putUUID(KEY_UUID, java.util.UUID.randomUUID());
         return tag.getUUID(KEY_UUID);
+    }
+    public static UUID ensureUuidReplace(ServerPlayer sp, InteractionHand hand) {
+        ItemStack old = sp.getItemInHand(hand);
+        if (old.isEmpty()) return null;
+
+        ItemStack stack = old.copy();
+        CompoundTag tag = stack.getOrCreateTag();
+        if (!tag.hasUUID(KEY_UUID)) tag.putUUID(KEY_UUID, UUID.randomUUID());
+        UUID id = tag.getUUID(KEY_UUID);
+
+        sp.setItemInHand(hand, stack);
+        sp.getInventory().setChanged();
+        sp.containerMenu.broadcastChanges(); // クライアントへ確実に同期
+        return id;
     }
 
     /**

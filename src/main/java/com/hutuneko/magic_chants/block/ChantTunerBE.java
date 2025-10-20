@@ -1,6 +1,7 @@
 package com.hutuneko.magic_chants.block;
 
 import com.hutuneko.magic_chants.ModRegistry;
+import com.hutuneko.magic_chants.api.chat.dictionary.IPlayerAliases;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -15,12 +16,15 @@ import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public class ChantTunerBE extends BlockEntity implements MenuProvider {
     // 追記: キャッシュ用フィールド（GUI表示やパケット用に）
     private @Nullable java.util.UUID cachedItemUuid = null;
     private int    cachedUses  = 0;
     private float  cachedPower = 0f;
     private String cachedChant = "";
+    private List<IPlayerAliases.AliasRule> rules;
 
     // ★ 1スロットのインベントリ
     private final ItemStackHandler items = new ItemStackHandler(1) {
@@ -110,5 +114,13 @@ public class ChantTunerBE extends BlockEntity implements MenuProvider {
     @Override
     public @Nullable AbstractContainerMenu createMenu(int p_39954_, @NotNull Inventory p_39955_, @NotNull Player p_39956_) {
         return null;
+    }
+    public void setRules(List<IPlayerAliases.AliasRule> newRules) {
+        this.rules.clear();
+        this.rules.addAll(newRules);
+        setChanged();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
     }
 }
