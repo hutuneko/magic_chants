@@ -1,5 +1,6 @@
 package com.hutuneko.magic_chants.api.block.gui;
 
+import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
@@ -20,7 +21,7 @@ public class ChantTunerScreen extends AbstractContainerScreen<ChantTunerMenu> {
     private final Level world;
     private final int x, y, z;
     private final Player entity;
-    EditBox a;
+    MultiLineEditBox a;
 
     public ChantTunerScreen(ChantTunerMenu container, Inventory inventory, Component text) {
         super(container, inventory, text);
@@ -88,10 +89,10 @@ public class ChantTunerScreen extends AbstractContainerScreen<ChantTunerMenu> {
         super.init();
 
         // EditBox を初期化
-        this.a = new EditBox(this.font, this.leftPos + 10, this.topPos + 10, 150, 20, Component.literal("詠唱を入力"));
-        this.a.setMaxLength(50);
-        this.a.setVisible(true);
-        this.a.setTextColor(0xFFFFFF);
+        this.a = new MultiLineEditBox(this.font, this.leftPos + 10, this.topPos + 10, 150, 100, Component.literal("詠唱を入力"),Component.literal("詠唱を入力"));
+//        this.a.setMaxLength(50);
+//        this.a.setVisible(true);
+        this.a.setFGColor(0xFFFFFF);
 
         // GUI に追加
         this.addRenderableWidget(this.a);
