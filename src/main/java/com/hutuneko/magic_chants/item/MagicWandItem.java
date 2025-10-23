@@ -4,6 +4,7 @@ import com.hutuneko.magic_chants.api.chat.MagicChatHook;
 import com.hutuneko.magic_chants.api.chat.MagicChatServer;
 import com.hutuneko.magic_chants.api.chat.item.ChantItemUtil;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -25,18 +26,9 @@ public class MagicWandItem extends Item {
     @Override
     public void onCraftedBy(@NotNull ItemStack stack, @NotNull Level level, @NotNull Player player) {
         super.onCraftedBy(stack, level, player);
-        ChantItemUtil.ensureUuid(stack); // in-placeでも安全（初期生成時）
+        ChantItemUtil.ensureUuid(stack, (ServerLevel) level); // in-placeでも安全（初期生成時）
         player.getInventory().setChanged();
         player.containerMenu.broadcastChanges();
-    }
-
-    // --- ロード後の補完 ---
-    @Override
-    public void verifyTagAfterLoad(@NotNull CompoundTag tag) {
-        super.verifyTagAfterLoad(tag);
-        if (!tag.hasUUID(ChantItemUtil.KEY_UUID)) {
-            tag.putUUID(ChantItemUtil.KEY_UUID, UUID.randomUUID());
-        }
     }
 
     // --- Tick更新時（loot・command・pickupなど） ---
@@ -45,7 +37,7 @@ public class MagicWandItem extends Item {
                               @NotNull Entity entity, int slot, boolean selected) {
         super.inventoryTick(stack, level, entity, slot, selected);
         if (!level.isClientSide && entity instanceof Player player) {
-            ChantItemUtil.ensureUuid(stack);
+            ChantItemUtil.ensureUuid(stack, (ServerLevel) level);
         }
     }
 

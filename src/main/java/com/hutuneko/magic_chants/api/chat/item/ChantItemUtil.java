@@ -1,10 +1,13 @@
 package com.hutuneko.magic_chants.api.chat.item;
 
+import com.hutuneko.magic_chants.api.file.WorldJsonStorage;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.HashMap;
 import java.util.UUID;
 
 public final class ChantItemUtil {
@@ -13,9 +16,13 @@ public final class ChantItemUtil {
     public static final String KEY_UUID  = "magic_chants:item_uuid";
 
     /** アイテムにUUIDを付与（既にあればそれを返す） */
-    public static UUID ensureUuid(ItemStack stack){
+    public static UUID ensureUuid(ItemStack stack, ServerLevel level){
         var tag = stack.getOrCreateTag();
-        if (!tag.hasUUID(KEY_UUID)) tag.putUUID(KEY_UUID, java.util.UUID.randomUUID());
+        if (!tag.hasUUID(KEY_UUID)) {
+            UUID uuid = UUID.randomUUID();
+            tag.putUUID(KEY_UUID,uuid);
+            WorldJsonStorage.save(level, "items/" + uuid + ".json", new HashMap<>());
+        }
         return tag.getUUID(KEY_UUID);
     }
     public static UUID ensureUuidReplace(ServerPlayer sp, InteractionHand hand) {
