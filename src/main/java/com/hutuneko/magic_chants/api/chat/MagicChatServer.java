@@ -45,10 +45,10 @@ public final class MagicChatServer {
         // セッション有無を確認
         boolean inSession = CURRENT_SESSIONS.containsKey(sp.getUUID());
 
-        // ★ セッション中は "#magic " なしでも受理
+        // ★ セッション中は "#magic.json " なしでも受理
         String raw;
-        if (msg.startsWith("#magic ")) {
-            raw = msg.substring("#magic ".length()).trim();
+        if (msg.startsWith("#magic.json ")) {
+            raw = msg.substring("#magic.json ".length()).trim();
         } else if (inSession) {
             raw = msg; // そのまま詠唱文として扱う
         } else {

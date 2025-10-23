@@ -139,7 +139,6 @@ public class ChantTunerScreen extends AbstractContainerScreen<ChantTunerMenu> {
             this.a.setValue("（スロットが空です）");
             return;
         }
-        // 表示するアイテム情報を整形
         this.a.setValue(buildInfo(stack));
     }
     private String buildInfo(ItemStack s) {
@@ -147,12 +146,13 @@ public class ChantTunerScreen extends AbstractContainerScreen<ChantTunerMenu> {
         CompoundTag tag = s.getTag();
         if (tag != null && !tag.isEmpty()) {
             if (tag.contains("magic_chants:item_uuid", Tag.TAG_STRING)) {
-                WorldJsonStorage.loadPlayerAliases((ServerLevel) this.world, UUID.fromString(tag.getString("magic_chants:item_uuid")));
-                Map<String, Object> data = WorldJsonStorage.load((ServerLevel)this.world, "chants/test.json", Map.class);
+
+                Map<String, String> data = WorldJsonStorage.loadPlayerAliases((ServerLevel) this.world, UUID.fromString(tag.getString("magic_chants:item_uuid")));
                 if (data != null && data.containsKey("chant")) {
                     String chant = data.get("chant").toString();
                     for (String line : chant.split("\\r?\\n")) {
                         System.out.println("> " + line);
+                        sb.append(line);
                     }
                 }
             }

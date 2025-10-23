@@ -5,7 +5,7 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 
 // クライアント専用
 public class MagicChatScreen extends ChatScreen {
-    private static final String PREFIX = "#magic ";
+    private static final String PREFIX = "#magic.json ";
 
     public MagicChatScreen() {
         super("");
@@ -21,7 +21,7 @@ public class MagicChatScreen extends ChatScreen {
     }
     @Override
     public boolean handleChatInput(String text, boolean addToHistory) {
-        // 送信直前に必ず #magic を付与
+        // 送信直前に必ず #magic.json を付与
         if (!text.startsWith(PREFIX)) text = PREFIX + text;
 
         // ↓ super(handleChatInput) を呼ぶと画面が閉じるので呼ばない！
