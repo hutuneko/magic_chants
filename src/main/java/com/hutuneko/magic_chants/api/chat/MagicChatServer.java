@@ -6,7 +6,6 @@ import com.hutuneko.magic_chants.api.chat.dictionary.PlayerAliasesCapability;
 import com.hutuneko.magic_chants.api.chat.item.dictionary.ItemAliasIO;
 import com.hutuneko.magic_chants.api.magic.MagicCast;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -63,24 +62,12 @@ public final class MagicChatServer {
         UUID itemUuid = (ctx != null) ? ctx.itemUuid() : null;
         var item = (ctx != null) ? ctx.itemStack() : ItemStack.EMPTY;
 
-        List<IPlayerAliases.AliasRule> itemRules = List.of();
         if (!item.isEmpty() && itemUuid != null) {
-            var lines = ItemAliasIO.read(level, itemUuid);
-            itemRules = AliasParser.parseLines(lines);
+
         }
 
-        // ===== プレイヤー辞書（Capability） =====
-        var capOpt = sp.getCapability(PlayerAliasesCapability.CAP);
-        var cap = capOpt.orElse(null);
-        List<IPlayerAliases.AliasRule> playerRules = (cap != null) ? cap.getRules() : List.of();
-
-        // ===== 合成（priority 昇順）→ 正規化 → パース =====
-        var merged = java.util.stream.Stream.concat(itemRules.stream(), playerRules.stream())
-                .sorted(java.util.Comparator.comparingInt(IPlayerAliases.AliasRule::priority))
-                .toList();
-
-        String normalized = AliasApplier.normalizeWithRules(raw, merged);
-        var steps = MagicLineParser.parse(normalized);
+        String normalized = raw;
+        var steps = MagicLineParser.parse(level,itemUuid, normalized);
         System.out.println(steps);
 
         if (!steps.isEmpty()) {

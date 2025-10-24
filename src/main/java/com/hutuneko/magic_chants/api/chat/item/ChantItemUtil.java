@@ -21,7 +21,7 @@ public final class ChantItemUtil {
         if (!tag.hasUUID(KEY_UUID)) {
             UUID uuid = UUID.randomUUID();
             tag.putUUID(KEY_UUID,uuid);
-            WorldJsonStorage.save(level, "items/" + uuid + ".json", new HashMap<>());
+            WorldJsonStorage.save(level, "magics/" + uuid + ".json", new HashMap<>());
         }
         return tag.getUUID(KEY_UUID);
     }

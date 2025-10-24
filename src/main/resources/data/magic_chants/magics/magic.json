@@ -90,6 +90,18 @@
     {
       "chant": "move",
       "steps": [{ "id": "magic_chants:magic_move" }]
+    },
+    {
+      "chant": "kill",
+      "steps": [{ "id": "magic_chants:magic_kill" }]
+    },
+    {
+      "chant": "わとふぁ",
+      "steps": [{ "id": "magic_chants:magic_wtf" }]
+    },
+    {
+      "chant": "wtf",
+      "steps": [{ "id": "magic_chants:magic_wtf" }]
     }
   ]
 }
