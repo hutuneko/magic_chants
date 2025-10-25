@@ -56,7 +56,25 @@ public class ChantTunerMenu extends AbstractContainerMenu implements Supplier<Ma
         for (int si = 0; si < 9; ++si)
             this.addSlot(new Slot(inv, si, 215 + 8 + si * 18, 79 + 140));
     }
+    public ChantTunerMenu(int id, Inventory inv, Player player, BlockPos pos) {
+        super(ModRegistry.CHANT_TUNER_MENU.get(), id);
+        this.entity = inv.player;
+        this.world = inv.player.level();
+        this.internal = new ItemStackHandler(1);
+        this.x = pos.getX();
+        this.y = pos.getY();
+        this.z = pos.getZ();
+        this.access = ContainerLevelAccess.create(world, pos);
 
+        this.customSlots.put(0, this.addSlot(new SlotItemHandler(internal, 0, 295, 86)));
+
+        // プレイヤーインベントリ
+        for (int si = 0; si < 3; ++si)
+            for (int sj = 0; sj < 9; ++sj)
+                this.addSlot(new Slot(inv, sj + (si + 1) * 9, 215 + 8 + sj * 18, 79 + 82 + si * 18));
+        for (int si = 0; si < 9; ++si)
+            this.addSlot(new Slot(inv, si, 215 + 8 + si * 18, 79 + 140));
+    }
     @Override
     public boolean stillValid(Player player) {
         if (this.bound) {

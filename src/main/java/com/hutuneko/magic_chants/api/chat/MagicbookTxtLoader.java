@@ -230,26 +230,23 @@ public final class MagicbookTxtLoader extends SimpleJsonResourceReloadListener {
         return tag;
     }
 
-    // SpellbookJsonLoader.java から抜粋（前回提示版をこの実装に差し替え）
-
-    /* ========= 内部型 ========= */
     private record StepDef(ResourceLocation id, CompoundTag args, @Nullable Map<String,String> argsFrom) {}
 
-    private static final class TriggerEntry {
+    public static final class TriggerEntry {
         private final List<OneTrigger> triggers;
         private final List<StepDef> steps;
         TriggerEntry(List<OneTrigger> triggers, List<StepDef> steps) {
             this.triggers = triggers; this.steps = steps;
         }
         /** マッチしたら「名前→値」のキャプチャ表（regexは name→value、contains/startswithは空Map） */
-        @Nullable Map<String,String> match(String s) {
+        @Nullable public Map<String,String> match(String s) {
             for (OneTrigger t : triggers) {
                 var cap = t.test(s);
                 if (cap != null) return cap;
             }
             return null;
         }
-        List<MagicCast.Step> buildSteps(@Nullable Map<String,String> captured) {
+        public List<MagicCast.Step> buildSteps(@Nullable Map<String,String> captured) {
             return toSteps(steps, captured);
         }
     }

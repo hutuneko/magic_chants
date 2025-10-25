@@ -1,0 +1,4 @@
+{
+  "parent": "item/handheld",
+  "textures": { "layer0": "magic_chants:item/magic_wand" }
+}
