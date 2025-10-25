@@ -4,6 +4,7 @@ import com.hutuneko.magic_chants.api.chat.net.C2S_CommitMagicPacket;
 import com.hutuneko.magic_chants.api.net.MagicNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
@@ -30,10 +31,11 @@ public final class MagicChatHook {
         mc.execute(() -> mc.setScreen(new MagicChatScreen()));
     }
 
-    public static void openMagicChatSession(UUID itemUuid,InteractionHand hand,ItemStack itemStack) {
+    public static void openMagicChatSession(UUID itemUuid, InteractionHand hand, ItemStack itemStack, ServerPlayer player) {
         currentItemUuid = itemUuid;
         currentHand = hand;
         currentItemStack = itemStack;
+        player.getPersistentData().putUUID("magic_chants:itemuuid",itemUuid);
         openMagicChatSession(); // 既存の画面オープンを流用
     }
 

@@ -1,7 +1,6 @@
 package com.hutuneko.magic_chants.api.net;
 
 import com.hutuneko.magic_chants.api.block.net.C2S_ApplyAliasesFromTuner;
-import com.hutuneko.magic_chants.api.chat.item.dictionary.C2S_ApplyAliasesToItem;
 import com.hutuneko.magic_chants.api.chat.net.C2S_CommitMagicPacket;
 import com.hutuneko.magic_chants.api.player.attribute.magic_power.net.S2C_SyncMagicPowerPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -40,11 +39,6 @@ public final class MagicNetwork {
                 .encoder(C2S_ApplyAliasesFromTuner::encode)
                 .decoder(C2S_ApplyAliasesFromTuner::decode)
                 .consumerMainThread(C2S_ApplyAliasesFromTuner::handle)
-                .add();
-        CHANNEL.messageBuilder(C2S_ApplyAliasesToItem.class, id++, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(C2S_ApplyAliasesToItem::encode)
-                .decoder(C2S_ApplyAliasesToItem::decode)
-                .consumerMainThread(C2S_ApplyAliasesToItem::handle)
                 .add();
         if (FMLEnvironment.dist.isClient()) {
             CHANNEL.messageBuilder(S2C_SyncMagicPowerPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
