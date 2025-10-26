@@ -2,6 +2,7 @@ package com.hutuneko.magic_chants.api.file;
 
 import com.google.gson.*;
 import com.hutuneko.magic_chants.api.magic.MagicCast;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -229,7 +230,7 @@ public class WorldJsonStorage {
         }
 
         /** argsFrom を反映して最終 Step を生成 */
-        List<com.hutuneko.magic_chants.api.magic.MagicCast.Step> buildSteps(@Nullable Map<String, String> captured) {
+        List<MagicCast.Step> buildSteps(@Nullable Map<String, String> captured) {
             return toSteps(steps, captured);
         }
     }
@@ -272,7 +273,7 @@ public class WorldJsonStorage {
 
     /** JSON 1エントリ（spell定義）をパースして exact/triggers へ格納 */
     private static void parseSpellObject(
-            Map<String, List<com.hutuneko.magic_chants.api.magic.MagicCast.Step>> exactOut,
+            Map<String, List<MagicCast.Step>> exactOut,
             List<TriggerEntry> triggersOut,
             JsonElement el
     ) {
@@ -358,9 +359,9 @@ public class WorldJsonStorage {
     }
 
     /** StepDef + captured を最終 Step（MagicCast.Step）へ */
-    private static List<com.hutuneko.magic_chants.api.magic.MagicCast.Step>
+    private static List<MagicCast.Step>
     toSteps(List<StepDef> defs, @Nullable Map<String, String> captured) {
-        List<com.hutuneko.magic_chants.api.magic.MagicCast.Step> out = new ArrayList<>();
+        List<MagicCast.Step> out = new ArrayList<>();
         for (StepDef d : defs) {
             CompoundTag args = d.args.copy();
             if (d.argsFrom != null && captured != null) {
@@ -378,7 +379,7 @@ public class WorldJsonStorage {
                     }
                 }
             }
-            out.add(new com.hutuneko.magic_chants.api.magic.MagicCast.Step(d.id, args));
+            out.add(new MagicCast.Step(d.id, args));
         }
         return out;
     }
@@ -468,6 +469,34 @@ public class WorldJsonStorage {
             groupIndex++;
         }
         return nameToIndex;
+    }
+    // WorldJsonStorage に追加
+    public static @Nullable JsonElement loadDataJson(MinecraftServer server, String namespace, String path) {
+        ResourceLocation loc = new ResourceLocation(namespace, path); // e.g. magic_chants:magics/magic.json
+        try {
+            var opt = server.getResourceManager().getResource(loc); // Optional<Resource>
+            if (opt.isEmpty()) return null;
+            try (var in = opt.get().open();
+                 var rd = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+                return JsonParser.parseReader(rd);
+            }
+        } catch (Exception e) {
+            System.err.println("[WorldJsonStorage] loadDataJson failed: " + loc + " : " + e);
+            return null;
+        }
+    }
+
+    // WorldJsonStorage に追加
+    public static void saveJson(ServerLevel level, String relative, JsonElement json) {
+        Path file = getWorldFile(level, relative).toPath();
+        try {
+            Files.createDirectories(file.getParent());
+            try (var w = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
+                new GsonBuilder().setPrettyPrinting().create().toJson(json, w);
+            }
+        } catch (IOException e) {
+            System.err.println("[WorldJsonStorage] saveJson failed: " + file + " : " + e);
+        }
     }
 
 }

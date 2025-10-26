@@ -59,7 +59,7 @@ public class MagicWandItem extends Item {
         else if (level.isClientSide) {
             uuid = ChantItemUtil.getUuid(stack);
             if (player.isShiftKeyDown() && uuid != null) {
-                MagicChatHook.openMagicChatSession(uuid, hand, stack, (ServerPlayer) player);
+                MagicChatHook.openMagicChatSession(uuid, hand, stack, player);
             }
         }
 

@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
@@ -22,22 +23,27 @@ public final class MagicChatHook {
     private static InteractionHand currentHand;
     private static ItemStack currentItemStack;
 
-    public static void openMagicChatSession() {
-        var mc = Minecraft.getInstance();
-        if (mc == null) return;
-        if (mc.player == null || mc.level == null) return;
+//    public static void openMagicChatSession() {
+//        var mc = Minecraft.getInstance();
+//        if (mc == null) return;
+//        if (mc.player == null || mc.level == null) return;
+//
+//        magicSessionActive = true;
+//        mc.execute(() -> mc.setScreen(new MagicChatScreen()));
+//    }
 
-        magicSessionActive = true;
-        mc.execute(() -> mc.setScreen(new MagicChatScreen()));
-    }
-
-    public static void openMagicChatSession(UUID itemUuid, InteractionHand hand, ItemStack itemStack, ServerPlayer player) {
+    public static void openMagicChatSession(UUID itemUuid, InteractionHand hand, ItemStack itemStack, Player player) {
         currentItemUuid = itemUuid;
         currentHand = hand;
         currentItemStack = itemStack;
-        player.getPersistentData().putUUID("magic_chants:itemuuid",itemUuid);
-        openMagicChatSession(); // 既存の画面オープンを流用
+        player.getPersistentData().putUUID("magic_chants:itemuuid", itemUuid);
+
+        var mc = Minecraft.getInstance();
+        if (mc != null) {
+            mc.execute(() -> mc.setScreen(new MagicChatScreen(itemUuid, hand, itemStack)));
+        }
     }
+
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent e) {

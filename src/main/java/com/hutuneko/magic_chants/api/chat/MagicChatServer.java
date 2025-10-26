@@ -57,10 +57,9 @@ public final class MagicChatServer {
         var ctx = CURRENT_SESSIONS.get(sp.getUUID());
         UUID itemUuid = (ctx != null) ? ctx.itemUuid() : null;
         var item = (ctx != null) ? ctx.itemStack() : ItemStack.EMPTY;
-
-        if (!item.isEmpty() && itemUuid != null) {
-            itemUuid = sp.getPersistentData().getUUID("magic_chants:itemuuid");
-        }
+//        if (!item.isEmpty() && itemUuid != null) {
+//            itemUuid = sp.getPersistentData().getUUID("magic_chants:itemuuid");
+//        }
 
         String normalized = raw;
         var steps = MagicLineParser.parse(level,itemUuid, normalized);

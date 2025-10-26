@@ -2,13 +2,24 @@ package com.hutuneko.magic_chants.api.chat;
 
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.ItemStack;
+
+import java.util.UUID;
 
 // クライアント専用
 public class MagicChatScreen extends ChatScreen {
-    private static final String PREFIX = "#magic.json ";
+    private static final String PREFIX = "#magic ";
+    private final UUID itemUuid;
+    private final InteractionHand hand;
+    private final ItemStack itemStack;
 
-    public MagicChatScreen() {
+    public MagicChatScreen(UUID itemUuid, InteractionHand hand, ItemStack itemStack) {
         super("");
+        this.itemUuid = itemUuid;
+        this.hand = hand;
+        this.itemStack = itemStack;
     }
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
