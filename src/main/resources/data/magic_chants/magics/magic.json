@@ -131,6 +131,24 @@
       "steps": [
         { "id": "magic_chants:magic_thunder" }
       ]
+    },
+    {
+      "chant": "わとふぁ",
+      "steps": [
+        { "id": "magic_chants:magic_wtf" }
+      ]
+    },
+    {
+      "chant": "wtf",
+      "steps": [
+        { "id": "magic_chants:magic_wtf" }
+      ]
+    },
+    {
+      "chant": "kill",
+      "steps": [
+        { "id": "magic_chants:magic_kill" }
+      ]
     }
   ]
 }
