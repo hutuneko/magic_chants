@@ -40,11 +40,12 @@ public record C2S_RewriteAndSaveAliases(UUID itemUuid, String rulesText) {
             String pretty = new com.google.gson.GsonBuilder().setPrettyPrinting().create()
                     .toJson(com.google.gson.JsonParser.parseString(out));
             WorldJsonStorage.save(sl, "magics/" + m.itemUuid() + ".json", pretty);
-
+            Object o = WorldJsonStorage.load(sl, "magics/" + m.itemUuid() + ".json", Object.class);
+            String j  = AliasRewriter.toAliasLinesFromMagics(o);
             // 4) （任意）最新状態をS2Cで返して画面更新
             MagicNetwork.CHANNEL.send(
                     PacketDistributor.PLAYER.with(() -> sp),
-                    new S2C_SyncItemAliases(m.itemUuid(), pretty)
+                    new S2C_SyncItemAliases(m.itemUuid(), j)
             );
         });
         c.setPacketHandled(true);

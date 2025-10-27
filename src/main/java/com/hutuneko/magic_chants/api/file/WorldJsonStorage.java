@@ -45,14 +45,25 @@ public class WorldJsonStorage {
             File file = getWorldFile(level, relativePath);
             file.getParentFile().mkdirs(); // ディレクトリ自動生成
             try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
-                GSON.toJson(data, writer);
+                if (data instanceof String str) {
+                    // 文字列ならパースして保存（JSON整形）
+                    JsonElement el = JsonParser.parseString(str);
+                    GSON.toJson(el, writer);
+                } else {
+                    // 通常のオブジェクトならそのまま保存
+                    GSON.toJson(data, writer);
+                }
             }
             System.out.println("[WorldJsonStorage] Saved JSON → " + file.getAbsolutePath());
         } catch (IOException e) {
             System.err.println("[WorldJsonStorage] Failed to save JSON: " + relativePath);
             e.printStackTrace();
+        } catch (Exception ex) {
+            System.err.println("[WorldJsonStorage] Invalid JSON data: " + relativePath);
+            ex.printStackTrace();
         }
     }
+
 
     // =====================================================
     // 読み込み

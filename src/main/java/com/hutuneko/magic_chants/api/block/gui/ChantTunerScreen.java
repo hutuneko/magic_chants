@@ -2,6 +2,7 @@ package com.hutuneko.magic_chants.api.block.gui;
 
 import com.hutuneko.magic_chants.api.block.net.C2S_RequestItemAliases;
 import com.hutuneko.magic_chants.api.block.net.C2S_RewriteAndSaveAliases;
+import com.hutuneko.magic_chants.api.file.AliasRewriter;
 import com.hutuneko.magic_chants.api.net.MagicNetwork;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
@@ -141,7 +142,6 @@ public class ChantTunerScreen extends AbstractContainerScreen<ChantTunerMenu> im
             // いったんプレースホルダ表示
             this.a.setValue("(loading aliases...)");
 
-            // ★ サーバーへ問い合わせ
             MagicNetwork.CHANNEL.sendToServer(new C2S_RequestItemAliases(uuid));
 
         } else {
