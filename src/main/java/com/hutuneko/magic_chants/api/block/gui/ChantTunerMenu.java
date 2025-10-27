@@ -3,6 +3,8 @@ package com.hutuneko.magic_chants.api.block.gui;
 
 import com.hutuneko.magic_chants.ModRegistry;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -35,7 +37,13 @@ public class ChantTunerMenu extends AbstractContainerMenu implements Supplier<Ma
     private Supplier<Boolean> boundItemMatcher = null;
     private Entity boundEntity = null;
     private BlockEntity boundBlockEntity = null;
+    @OnlyIn(Dist.CLIENT)
+    private java.util.function.Consumer<ItemStack> clientSlot0Changed;
 
+    @OnlyIn(Dist.CLIENT)
+    public void setClientSlot0Changed(java.util.function.Consumer<ItemStack> fn) {
+        this.clientSlot0Changed = fn;
+    }
     public ChantTunerMenu(int id, Inventory inv, Player player) {
         super(ModRegistry.CHANT_TUNER_MENU.get(),id);
         this.entity = inv.player;
@@ -48,8 +56,15 @@ public class ChantTunerMenu extends AbstractContainerMenu implements Supplier<Ma
             this.z = pos.getZ();
             access = ContainerLevelAccess.create(world, pos);
         this.customSlots.put(0, this.addSlot(new SlotItemHandler(internal, 0, 295, 86) {
-            private final int slot = 0;
+            @Override
+            public void setChanged() {
+                super.setChanged();
+                if (clientSlot0Changed != null) {
+                    clientSlot0Changed.accept(getItem());
+                }
+            }
         }));
+
         for (int si = 0; si < 3; ++si)
             for (int sj = 0; sj < 9; ++sj)
                 this.addSlot(new Slot(inv, sj + (si + 1) * 9, 215 + 8 + sj * 18, 79 + 82 + si * 18));

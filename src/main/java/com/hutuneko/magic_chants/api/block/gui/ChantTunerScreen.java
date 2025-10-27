@@ -1,10 +1,11 @@
 package com.hutuneko.magic_chants.api.block.gui;
 
-import com.hutuneko.magic_chants.api.file.WorldJsonStorage;
+import com.hutuneko.magic_chants.api.block.net.C2S_RequestItemAliases;
+import com.hutuneko.magic_chants.api.block.net.C2S_RewriteAndSaveAliases;
+import com.hutuneko.magic_chants.api.net.MagicNetwork;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.item.ItemStack;
@@ -18,18 +19,23 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.Minecraft;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.jetbrains.annotations.NotNull;
 
-public class ChantTunerScreen extends AbstractContainerScreen<ChantTunerMenu> {
+import javax.annotation.Nullable;
+
+public class ChantTunerScreen extends AbstractContainerScreen<ChantTunerMenu> implements ContainerListener{
     private final static HashMap<String, Object> guistate = ChantTunerMenu.guistate;
     private final Level world;
     private final int x, y, z;
     private final Player entity;
+    private static final String KEY_UUID = "magic_chants:item_uuid";
+    @Nullable
+    private UUID viewingItemUuid = null;
     MultiLineEditBox a;
+    private Button saveBtn;
 
     public ChantTunerScreen(ChantTunerMenu container, Inventory inventory, Component text) {
         super(container, inventory, text);
@@ -54,8 +60,7 @@ public class ChantTunerScreen extends AbstractContainerScreen<ChantTunerMenu> {
     @Override
     public void removed() {
         super.removed();
-        // リスナーを外す（メモリリーク防止）
-        menu.removeSlotListener(slotListener);
+        this.menu.removeSlotListener(this);
     }
 
     @Override
@@ -104,8 +109,6 @@ public class ChantTunerScreen extends AbstractContainerScreen<ChantTunerMenu> {
 
         // EditBox を初期化
         this.a = new MultiLineEditBox(this.font, this.leftPos + 10, this.topPos + 10, 150, 100, Component.literal("詠唱を入力"),Component.literal("詠唱を入力"));
-//        this.a.setMaxLength(50);
-//        this.a.setVisible(true);
         this.a.setFGColor(0xFFD700);
 
         // GUI に追加
@@ -113,50 +116,63 @@ public class ChantTunerScreen extends AbstractContainerScreen<ChantTunerMenu> {
 
         // 必要に応じて guistate に登録
         guistate.put("text:a", a);
-        menu.addSlotListener(slotListener);
-
-        // 画面を開いた時点の内容を反映
+        this.menu.addSlotListener(this);
+        this.menu.setClientSlot0Changed(this::updateText);
+        saveBtn = Button.builder(Component.literal("Save"), b -> doSave()).pos(leftPos+6, topPos+6+110).size(60,20).build();
+        addRenderableWidget(saveBtn);
         updateTextFromSlot();
     }
-    private final ContainerListener slotListener = new ContainerListener() {
-        @Override
-        public void slotChanged(AbstractContainerMenu menu, int slotIndex, ItemStack stack) {
-            // ★ 自分のBE用スロット（例：index 0）を監視
-            if (slotIndex == 0) {
-                updateText(stack);
-            }
-        }
-        @Override public void dataChanged(AbstractContainerMenu menu, int dataIndex, int value) {}
-    };
-
     private void updateTextFromSlot() {
         ItemStack stack = menu.getSlot(0).getItem(); // BE側の専用スロットindexに合わせる
         updateText(stack);
     }
 
-    private void updateText(ItemStack stack) {
+    public void updateText(ItemStack stack) {
         if (stack.isEmpty()) {
-            this.a.setValue("（スロットが空です）");
+            this.a.setValue("");
+            this.viewingItemUuid = null;
             return;
         }
-        this.a.setValue(buildInfo(stack));
-    }
-    private String buildInfo(ItemStack s) {
-        StringBuilder sb = new StringBuilder();
-        CompoundTag tag = s.getTag();
-        if (tag != null && !tag.isEmpty()) {
-            if (tag.contains("magic_chants:item_uuid", Tag.TAG_STRING)) {
+        CompoundTag tag = stack.getTag();
+        if (tag != null && tag.hasUUID(KEY_UUID)) {
+            UUID uuid = tag.getUUID(KEY_UUID);
+            this.viewingItemUuid = uuid;
 
-                Map<String, String> data = WorldJsonStorage.loadPlayerAliases((ServerLevel) this.world, UUID.fromString(tag.getString("magic_chants:item_uuid")));
-                if (data != null && data.containsKey("chant")) {
-                    String chant = data.get("chant").toString();
-                    for (String line : chant.split("\\r?\\n")) {
-                        System.out.println("> " + line);
-                        sb.append(line);
-                    }
-                }
-            }
+            // いったんプレースホルダ表示
+            this.a.setValue("(loading aliases...)");
+
+            // ★ サーバーへ問い合わせ
+            MagicNetwork.CHANNEL.sendToServer(new C2S_RequestItemAliases(uuid));
+
+        } else {
+            this.a.setValue(stack.getHoverName().getString());
+            this.viewingItemUuid = null;
         }
-        return sb.toString();
     }
+
+    public void applyAliasesFromServerJson(UUID uuid, String json) {
+        if (viewingItemUuid == null || !viewingItemUuid.equals(uuid)) {
+            System.out.println("[GUI] uuid mismatch: viewing=" + viewingItemUuid + " recv=" + uuid);
+            return;
+        }
+        try {
+            this.a.setValue(json);
+        } catch (Exception ex) {
+            this.a.setValue("(invalid json)");
+        }
+    }
+
+    private void doSave() {
+        MagicNetwork.CHANNEL.sendToServer(
+                new C2S_RewriteAndSaveAliases(this.viewingItemUuid, this.a.getValue())
+        );
+    }
+
+    @Override
+    public void slotChanged(AbstractContainerMenu menu, int slotIndex, ItemStack stack) {
+        if (slotIndex == 0) {
+            updateText(stack);
+        }
+    }
+    @Override public void dataChanged(AbstractContainerMenu menu, int dataIndex, int value) {}
 }

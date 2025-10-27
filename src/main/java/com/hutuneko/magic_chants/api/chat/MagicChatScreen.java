@@ -1,5 +1,8 @@
 package com.hutuneko.magic_chants.api.chat;
 
+import com.hutuneko.magic_chants.api.chat.net.C2S_CommitMagicPacket;
+import com.hutuneko.magic_chants.api.net.MagicNetwork;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.chat.Component;
@@ -14,6 +17,7 @@ public class MagicChatScreen extends ChatScreen {
     private final UUID itemUuid;
     private final InteractionHand hand;
     private final ItemStack itemStack;
+    private boolean closeSent = false;
 
     public MagicChatScreen(UUID itemUuid, InteractionHand hand, ItemStack itemStack) {
         super("");
@@ -63,5 +67,14 @@ public class MagicChatScreen extends ChatScreen {
         this.input.setResponder(s -> {}); // （任意）サジェストをリセットしたい場合
         this.setFocused(this.input);
         return addToHistory;
+    }
+    @Override
+    public void removed() {
+        // 画面が閉じられた時に一度だけ通知
+        if (!closeSent && Minecraft.getInstance().player != null) {
+            MagicNetwork.CHANNEL.sendToServer(new C2S_CommitMagicPacket(itemUuid,hand,itemStack));
+            closeSent = true;
+        }
+        super.removed();
     }
 }

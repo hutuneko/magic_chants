@@ -91,11 +91,11 @@ public class WorldJsonStorage {
         return worldDir.resolve(BASE_DIR).resolve(relativePath).toFile();
     }
     public static void savePlayerAliases(ServerLevel level, UUID uuid, Map<String, String> data) {
-        WorldJsonStorage.save(level, "aliases/" + uuid + ".json", data);
+        WorldJsonStorage.save(level, "magics/" + uuid + ".json", data);
     }
 
     public static Map<String, String> loadPlayerAliases(ServerLevel level, UUID uuid) {
-        return WorldJsonStorage.load(level, "aliases/" + uuid + ".json", Map.class);
+        return WorldJsonStorage.load(level, "magics/" + uuid + ".json", Map.class);
     }
 
     // ====== ここから追記：UUIDファイル用のスマートマッチ ======
@@ -113,7 +113,7 @@ public class WorldJsonStorage {
      */
     public static void reloadItemMagics(ServerLevel level, UUID uuid) {
         Path base = level.getServer().getWorldPath(LevelResource.ROOT)
-                .resolve(BASE_DIR).resolve("items");
+                .resolve(BASE_DIR).resolve("magics");
 
         Map<String, List<MagicCast.Step>> nextExact = new LinkedHashMap<>();
         List<TriggerEntry> nextTriggers = new ArrayList<>();
@@ -189,11 +189,8 @@ public class WorldJsonStorage {
     public static List<MagicCast.Step> matchSmartItem(ServerLevel level, UUID uuid, String raw) {
         if (raw == null) return List.of();
         String s = raw.trim();
+        reloadItemMagics(level, uuid);
 
-        // 必要に応じて（初期化後すぐなど）キャッシュを構築
-        if (!ITEM_EXACT.containsKey(uuid) && !ITEM_TRIGGERS.containsKey(uuid)) {
-            reloadItemMagics(level, uuid);
-        }
 
         var exact = ITEM_EXACT.getOrDefault(uuid, Map.of());
         var v = exact.get(s);

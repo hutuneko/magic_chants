@@ -57,9 +57,6 @@ public final class MagicChatServer {
         var ctx = CURRENT_SESSIONS.get(sp.getUUID());
         UUID itemUuid = (ctx != null) ? ctx.itemUuid() : null;
         var item = (ctx != null) ? ctx.itemStack() : ItemStack.EMPTY;
-//        if (!item.isEmpty() && itemUuid != null) {
-//            itemUuid = sp.getPersistentData().getUUID("magic_chants:itemuuid");
-//        }
 
         String normalized = raw;
         var steps = MagicLineParser.parse(level,itemUuid, normalized);
@@ -76,6 +73,7 @@ public final class MagicChatServer {
     // チャット閉じ通知（C2S_CommitMagicPacket）でそのまま実行
     public static void handleCommit(ServerPlayer p) {
         var list = PENDING.remove(p.getUUID());
+        System.out.println(list);
         if (list == null || list.isEmpty()) return;
 
         // --- 詠唱文をまとめる ---
