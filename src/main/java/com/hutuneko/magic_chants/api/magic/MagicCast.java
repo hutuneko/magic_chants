@@ -148,6 +148,7 @@ public final class MagicCast {
             //直後を覗く supplier をセット
             int nextIdx = s.index + 1;
             ctx._setPeekNextSupplier(() -> nextIdx < s.steps.size() ? s.steps.get(nextIdx) : null);
+            ctx._setPeekFrontSupplier(() -> s.index - 1 > 0 ? s.steps.get(s.index - 1) : null);
 
             ctx._setPeekRestSupplier(() ->
                     (nextIdx <= s.steps.size()) ? List.copyOf(s.steps.subList(nextIdx, s.steps.size()))

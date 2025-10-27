@@ -19,6 +19,7 @@ public final class MagicContext {
     private boolean cancelRequested = false;
     // ★ 追加：直後のStepを覗くためのSupplier
     private Supplier<MagicCast.Step> peekNextSupplier;
+    private Supplier<MagicCast.Step> peekFrontSupplier;
     // ★ 追加：直後に差し込みたいStepのキュー
     private final ArrayDeque<MagicCast.Step> enqueueNext = new ArrayDeque<>();
 
@@ -33,10 +34,17 @@ public final class MagicContext {
     /* package */ void _setPeekNextSupplier(Supplier<MagicCast.Step> s) {
         this.peekNextSupplier = s;
     }
+    /* package */ void _setPeekFrontSupplier(Supplier<MagicCast.Step> s) {
+        this.peekFrontSupplier = s;
+    }
 
     /** 今の直後に来るStepを覗く（無ければnull） */
     public @Nullable MagicCast.Step peekNext() {
         return this.peekNextSupplier != null ? this.peekNextSupplier.get() : null;
+    }
+
+    public @Nullable MagicCast.Step peekFront() {
+        return this.peekFrontSupplier != null ? this.peekFrontSupplier.get() : null;
     }
 
     /** 今の直後に差し込みたいStepを申請（複数OK・順序維持） */
