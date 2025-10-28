@@ -64,6 +64,7 @@ public final class MagicCast {
 
     /* プレイヤー毎のセッション（1人1つ想定。複数許す場合はキーを別にする） */
     private static final Map<UUID, Session> SESSIONS = new ConcurrentHashMap<>();
+    private static final Map<UUID, List<Boolean>> SUBLIST = new ConcurrentHashMap<>();
 
     /* ===== 公開API ===== */
 
@@ -75,7 +76,8 @@ public final class MagicCast {
                                   List<Step> steps,
                                   @Nullable DataBag initialBag,
                                   int timeoutTicks,
-                                  String string) {
+                                  String string,
+                                  List<Boolean> subList) {
         Objects.requireNonNull(level, "level");
         Objects.requireNonNull(steps, "steps");
         Session s = new Session(level, player, steps, initialBag, timeoutTicks, string);
@@ -83,6 +85,7 @@ public final class MagicCast {
         System.out.println("[MagicCast] start chant=" + s.bag.get(Keys.CHANT_RAW));
         System.out.println("[MagicCast] start steps=" + s.steps.size());
         ensureTicker(level.getServer());
+        SUBLIST.put(s.playerId,subList);
         runUntilWaitOrEnd(s, player);
     }
 
@@ -115,7 +118,7 @@ public final class MagicCast {
         s.steps = List.copyOf(newList);
         s.waitToken = null;
 
-        runUntilWaitOrEnd(s, player);
+        runUntilWaitOrEnd(s, player );
         return true;
     }
 
@@ -137,6 +140,7 @@ public final class MagicCast {
             System.out.println("[DBG] POWER=" + s.bag.get(Keys.POWER));
             System.out.printf("[MagicCast/ChantScore] '%s' -> %.2f (Power=%.2f)%n", s.bag.get(Keys.CHANT_RAW), scorer, scorer);
         }
+        List<Boolean> subList = SUBLIST.get(s.playerId);
         while (s.index < s.steps.size()) {
             MagicCast.Step step = s.steps.get(s.index);
 
@@ -146,21 +150,31 @@ public final class MagicCast {
                 return;
             }
             //直後を覗く supplier をセット
-            int nextIdx = s.index + 1;
-            ctx._setPeekNextSupplier(() -> nextIdx < s.steps.size() ? s.steps.get(nextIdx) : null);
-            ctx._setPeekFrontSupplier(() -> s.index - 1 > 0 ? s.steps.get(s.index - 1) : null);
+            int idx = s.index;
+            ctx._setPeekNextSupplier(() -> idx+1 < s.steps.size() ? s.steps.get(idx+1) : null);
+            ctx._setPeekFrontSupplier(() -> idx - 1 > 0 ? s.steps.get(idx - 1) : null);
+            boolean i = true;
+            int j = 0;
+            while (i){
+                if (subList.get(j + idx)){
+                    int k = idx +j;
+                    ctx._setPeekMain(() -> k < s.steps.size() ? s.steps.get(k) : null);
+                    i = true;
+                }
+                j++;
+            }
 
             ctx._setPeekRestSupplier(() ->
-                    (nextIdx <= s.steps.size()) ? List.copyOf(s.steps.subList(nextIdx, s.steps.size()))
+                    (idx <= s.steps.size()) ? List.copyOf(s.steps.subList(idx, s.steps.size()))
                             : List.of());
-            MagicClassRegistry.call(step.id(), ctx, safeArgs(step.args()),scorer);
+            MagicClassRegistry.call(step.id(), ctx, safeArgs(step.args()),scorer,subList.get(s.index));
             s.index++;
 
             //Magic 側が enqueue した Step を i+1 に挿入
             var injected = ctx._drainEnqueued();
             if (!injected.isEmpty()) {
                 List<Step> newList = new ArrayList<>(s.steps);
-                newList.addAll(nextIdx, injected);
+                newList.addAll(idx, injected);
                 s.steps = List.copyOf(newList);
             }
 
@@ -214,7 +228,7 @@ public final class MagicCast {
                     s.resumeGameTime = 0L;
                     ServerPlayer sp = s.level.getServer().getPlayerList().getPlayer(s.playerId);
                     System.out.println("[MagicCast] resume for " + s.playerId + " at tick " + now);
-                    runUntilWaitOrEnd(s, sp);
+                    runUntilWaitOrEnd(s, sp );
                 }
             }
         }

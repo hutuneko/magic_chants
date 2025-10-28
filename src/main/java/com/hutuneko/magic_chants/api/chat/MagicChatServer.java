@@ -17,8 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class MagicChatServer {
 
     private static final Map<UUID, List<MagicCast.Step>> PENDING = new ConcurrentHashMap<>();
+    private static final Map<UUID, List<List<MagicCast.Step>>> SUB = new ConcurrentHashMap<>();
     public static final Map<UUID, CurrentMagicContext> CURRENT_SESSIONS = new ConcurrentHashMap<>();
-    // 追記
     private static final Map<UUID, List<String>> CHANT_TEXTS = new ConcurrentHashMap<>();
 
     public record CurrentMagicContext(UUID itemUuid, InteractionHand hand, ItemStack itemStack) {}
@@ -53,7 +53,6 @@ public final class MagicChatServer {
 
         var level = sp.serverLevel();
 
-        // ===== アイテム辞書（セッションに紐づく UUID があれば読み込む） =====
         var ctx = CURRENT_SESSIONS.get(sp.getUUID());
         UUID itemUuid = (ctx != null) ? ctx.itemUuid() : null;
         var item = (ctx != null) ? ctx.itemStack() : ItemStack.EMPTY;
@@ -62,10 +61,16 @@ public final class MagicChatServer {
         var steps = MagicLineParser.parse(level,itemUuid, normalized);
         System.out.println(steps);
 
+
         if (!steps.isEmpty()) {
-            PENDING.computeIfAbsent(sp.getUUID(), k -> new java.util.ArrayList<>()).addAll(steps);
+            PENDING.computeIfAbsent(sp.getUUID(), k -> new java.util.ArrayList<>()).addAll(steps.get(0));
             CHANT_TEXTS.computeIfAbsent(sp.getUUID(), k -> new java.util.ArrayList<>()).add(raw);
             System.out.println("[DBG] parsed steps = " + steps.size());
+            steps.remove(0);
+            if (!steps.isEmpty()){
+                steps.add(null);
+                SUB.computeIfAbsent(sp.getUUID(), k ->new ArrayList<>()).addAll(steps);
+            }
         }
     }
 
@@ -75,7 +80,28 @@ public final class MagicChatServer {
         var list = PENDING.remove(p.getUUID());
         System.out.println(list);
         if (list == null || list.isEmpty()) return;
-
+        var sublist = SUB.remove(p.getUUID());
+        int k= 0;
+        List<Boolean> subList = new ArrayList<>();
+        for (int i = 0;list.size() > i;i++){
+            subList.add(false);
+        }
+        for (int i = 0;sublist.size() > i;i++) {
+            boolean j = true;
+            while (j){
+                List<MagicCast.Step> n = sublist.get(k);
+                if (!(n.isEmpty())) {
+                    for (int l = 0;n.size() > l;l++){
+                        subList.add(true);
+                    }
+                    list.addAll(i, n);
+                    k++;
+                } else {
+                    k++;
+                    j = false;
+                }
+            }
+        }
         // --- 詠唱文をまとめる ---
         var lines = CHANT_TEXTS.remove(p.getUUID());
         String chantRaw = (lines == null || lines.isEmpty()) ? "" : String.join(" ", lines).trim();
@@ -93,7 +119,7 @@ public final class MagicChatServer {
         }
 
         // --- 詠唱を実行 ---
-        MagicCast.startChain(level, p, list, null, 20 * 30, chantRaw);
+        MagicCast.startChain(level, p, list, null, 20 * 30, chantRaw,subList);
 
         // --- 後処理 ---
         clear(p);

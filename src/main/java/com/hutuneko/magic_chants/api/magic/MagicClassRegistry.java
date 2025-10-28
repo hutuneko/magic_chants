@@ -9,15 +9,27 @@ import java.util.Map;
 
 // 2) レジストリ本体（id → Class）
 public final class MagicClassRegistry {
-    private static final Map<ResourceLocation, Class<? extends BaseMagic>> TABLE = new HashMap<>();
+    private static final Map<ResourceLocation, Class<? extends Magic>> TABLE = new HashMap<>();
 
-    public static void registerSpell(ResourceLocation id, Class<? extends BaseMagic> cls) {
+    public static void registerSpell(ResourceLocation id, Class<? extends Magic> cls) {
         if (TABLE.putIfAbsent(id, cls) != null)
             throw new IllegalStateException("Duplicate spell id: " + id);
     }
 
     // 生成ヘルパ（CompoundTagコンストラクタ優先→0引数）
     private static BaseMagic newInstance(Class<? extends BaseMagic> cls, CompoundTag args) throws ReflectiveOperationException {
+
+        try {
+            var ctor = cls.getDeclaredConstructor(CompoundTag.class);
+            ctor.setAccessible(true);
+            return ctor.newInstance(args);
+        } catch (NoSuchMethodException miss) {
+            var ctor0 = cls.getDeclaredConstructor();
+            ctor0.setAccessible(true);
+            return ctor0.newInstance();
+        }
+    }
+    private static SubMagic newsubInstance(Class<? extends SubMagic> cls, CompoundTag args) throws ReflectiveOperationException {
 
         try {
             var ctor = cls.getDeclaredConstructor(CompoundTag.class);
@@ -44,21 +56,35 @@ public final class MagicClassRegistry {
 //            return false;
 //        }
 //    }
-    public static boolean call(ResourceLocation id, MagicContext ctx, CompoundTag args,float scorer) {
-        Class<? extends BaseMagic> cls = TABLE.get(id);
+    public static boolean call(ResourceLocation id, MagicContext ctx, CompoundTag args, float scorer, boolean sub) {
+        Class<?> cls;
+        cls = TABLE.get(id);
         if (cls == null) {
             System.out.println("[MagicRegistry] NOT FOUND: " + id);
             return false;
         }
-        try {
-            BaseMagic inst = newInstance(cls, args);
-            System.out.println("[MagicRegistry] RUN: " + id);
-            if (!(MPAPI.calculateMpCost(scorer, ctx)))return false;
-            inst.magic_content(ctx);
-            return true;
-        } catch (ReflectiveOperationException e) {
-            e.printStackTrace();
-            return false;
+        if (sub) {
+            try {
+                SubMagic inst = newsubInstance((Class<? extends SubMagic>) cls, args);
+                System.out.println("[MagicRegistry] RUN: " + id);
+                if (!(MPAPI.calculateMpCost(scorer, ctx))) return false;
+                inst.sub_magic(ctx);
+                return true;
+            } catch (ReflectiveOperationException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }else {
+            try {
+                BaseMagic inst = newInstance((Class<? extends BaseMagic>) cls, args);
+                System.out.println("[MagicRegistry] RUN: " + id);
+                if (!(MPAPI.calculateMpCost(scorer, ctx))) return false;
+                inst.magic_content(ctx);
+                return true;
+            } catch (ReflectiveOperationException e) {
+                e.printStackTrace();
+                return false;
+            }
         }
     }
 }
