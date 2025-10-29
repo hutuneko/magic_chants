@@ -1,6 +1,7 @@
 package com.hutuneko.magic_chants.api.chat;
 
 import com.hutuneko.magic_chants.api.magic.MagicCast;
+import com.hutuneko.magic_chants.api.util.MagicChantsAPI;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class MagicChatServer {
 
     private static final Map<UUID, List<MagicCast.Step>> PENDING = new ConcurrentHashMap<>();
-    private static final Map<UUID, List<List<MagicCast.Step>>> SUB = new ConcurrentHashMap<>();
+    private static final Map<UUID, List<MagicCast.Step>> SUB = new ConcurrentHashMap<>();
     public static final Map<UUID, CurrentMagicContext> CURRENT_SESSIONS = new ConcurrentHashMap<>();
     private static final Map<UUID, List<String>> CHANT_TEXTS = new ConcurrentHashMap<>();
 
@@ -67,9 +68,14 @@ public final class MagicChatServer {
             CHANT_TEXTS.computeIfAbsent(sp.getUUID(), k -> new java.util.ArrayList<>()).add(raw);
             System.out.println("[DBG] parsed steps = " + steps.size());
             steps.remove(0);
+
             if (!steps.isEmpty()){
                 steps.add(null);
-                SUB.computeIfAbsent(sp.getUUID(), k ->new ArrayList<>()).addAll(steps);
+                List<MagicCast.Step> a = new ArrayList<>();
+                for (List<MagicCast.Step> s :steps){
+                    a.addAll(s);
+                }
+                SUB.computeIfAbsent(sp.getUUID(), k ->new ArrayList<>()).addAll(a);
             }
         }
     }
@@ -79,29 +85,13 @@ public final class MagicChatServer {
     public static void handleCommit(ServerPlayer p) {
         var list = PENDING.remove(p.getUUID());
         System.out.println(list);
+        System.out.println("Listnullチェック前");
         if (list == null || list.isEmpty()) return;
+        System.out.println("Listnullチェック後");
         var sublist = SUB.remove(p.getUUID());
-        int k= 0;
-        List<Boolean> subList = new ArrayList<>();
-        for (int i = 0;list.size() > i;i++){
-            subList.add(false);
-        }
-        for (int i = 0;sublist.size() > i;i++) {
-            boolean j = true;
-            while (j){
-                List<MagicCast.Step> n = sublist.get(k);
-                if (!(n.isEmpty())) {
-                    for (int l = 0;n.size() > l;l++){
-                        subList.add(true);
-                    }
-                    list.addAll(i, n);
-                    k++;
-                } else {
-                    k++;
-                    j = false;
-                }
-            }
-        }
+        List<Boolean> bList = new ArrayList<>();
+        list = MagicChantsAPI.mergeWithUnknownMarkers(list,sublist);
+        System.out.println(bList);
         // --- 詠唱文をまとめる ---
         var lines = CHANT_TEXTS.remove(p.getUUID());
         String chantRaw = (lines == null || lines.isEmpty()) ? "" : String.join(" ", lines).trim();
@@ -119,7 +109,7 @@ public final class MagicChatServer {
         }
 
         // --- 詠唱を実行 ---
-        MagicCast.startChain(level, p, list, null, 20 * 30, chantRaw,subList);
+        MagicCast.startChain(level, p, list, null, 20 * 30, chantRaw,bList);
 
         // --- 後処理 ---
         clear(p);
