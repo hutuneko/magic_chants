@@ -2,10 +2,7 @@ package com.hutuneko.magic_chants;
 
 import com.hutuneko.magic_chants.api.magic.MagicClassRegistry;
 import com.hutuneko.magic_chants.magic.action.*;
-import com.hutuneko.magic_chants.magic.addition.Magic_DelayNext;
-import com.hutuneko.magic_chants.magic.addition.Magic_RepeatNext;
-import com.hutuneko.magic_chants.magic.addition.Magic_Target;
-import com.hutuneko.magic_chants.magic.addition.Magic_TargetPos;
+import com.hutuneko.magic_chants.magic.addition.*;
 import com.hutuneko.magic_chants.magic.target.MagicT_Self;
 import com.hutuneko.magic_chants.magic.target.MagicT_Selfeyespos;
 import com.hutuneko.magic_chants.magic.target.MagicT_Selfpos;
@@ -76,6 +73,10 @@ public class MagicRegister {
         MagicClassRegistry.registerSpell(
                 new ResourceLocation(Magic_chants.MODID, "magic_wtf"),
                 Magic_wtf.class
+        );
+        MagicClassRegistry.registerSpell(
+                new ResourceLocation(Magic_chants.MODID, "magic_replay"),
+                Magic_Replay.class
         );
     }
 }

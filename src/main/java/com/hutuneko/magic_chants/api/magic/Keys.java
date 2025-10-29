@@ -21,5 +21,7 @@ public final class Keys {
     public static final DataKey<String> CHANT_RAW =
             DataKey.of(NS, "chant_raw",Codec.STRING);
     public static final DataKey<UUID> TARGET_UUID =
-            DataKey.of(Keys.NS, "target_uuid", UUID_CODEC);
+            DataKey.of(NS, "target_uuid", UUID_CODEC);
+    public static final DataKey<UUID> PLAYER_UUID =
+            DataKey.of(NS, "player_uuid", UUID_CODEC);
 }

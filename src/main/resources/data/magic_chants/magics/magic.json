@@ -108,6 +108,14 @@
     {
       "chant": "move",
       "steps": [{ "id": "magic_chants:magic_move" }]
+    },
+    {
+      "chant": "再演",
+      "steps": [{ "id": "magic_chants:magic_replay" }]
+    },
+    {
+      "chant": "replay",
+      "steps": [{ "id": "magic_chants:magic_replay" }]
     }
   ]
 }

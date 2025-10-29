@@ -17,6 +17,7 @@ import java.util.List;
 public class Magic_BindSword extends Magic {
     private int uses = 1;
     public static final String NBT_KEY_CHAIN = "magic_chants:bound_chain";
+    public static final String NBT_KEY_SUB = "magic_chants:bound_sub";
     public static final String NBT_KEY_USES  = "magic_chants:uses";
 
     public Magic_BindSword() {}
@@ -35,15 +36,31 @@ public class Magic_BindSword extends Magic {
 
         // 直後から終わりまでの Step を覗く
         List<MagicCast.Step> rest = ctx.peekRest();
-        if (rest.isEmpty()) return; // 封入する中身が無い
+        if (rest.isEmpty()) return;
 
-        // チェーンを NBT にシリアライズ
+        List<Boolean> sub = MagicCast.SUBLIST.get(ctx.data().get(Keys.PLAYER_UUID).orElse(null));
         ListTag chain = new ListTag();
-        for (MagicCast.Step s : rest) {
-            CompoundTag one = new CompoundTag();
-            one.putString("id", s.id().toString());
-            one.put("args", s.args().copy());
-            chain.add(one);
+        ListTag sublist = new ListTag();
+        if (!sub.isEmpty()) {
+            boolean i = true;
+            while (i){
+                if (rest.size() == sub.size()){
+                    i = false;
+                }else {
+                    sub.remove(0);
+                }
+            }
+            for (MagicCast.Step s : rest) {
+                CompoundTag one = new CompoundTag();
+                one.putString("id", s.id().toString());
+                one.put("args", s.args().copy());
+                chain.add(one);
+            }
+            for (boolean s : sub) {
+                CompoundTag one = new CompoundTag();
+                one.putBoolean("sub", s);
+                sublist.add(one);
+            }
         }
         String chantRaw = ctx.data().get(Keys.CHANT_RAW).orElse("");
 
@@ -55,6 +72,7 @@ public class Magic_BindSword extends Magic {
             sword.getOrCreateTag().putString("magic_chants:chant_raw", chantRaw);
         }
         sword.getOrCreateTag().put(NBT_KEY_CHAIN, chain);
+        sword.getOrCreateTag().put(NBT_KEY_SUB, sublist);
         sword.getOrCreateTag().putInt(NBT_KEY_USES, uses);
         sword.getOrCreateTag().putInt("CustomUses", this.uses); // 最大耐久を上書き
         sword.setDamageValue(0);

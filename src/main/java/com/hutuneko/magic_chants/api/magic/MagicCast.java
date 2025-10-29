@@ -64,8 +64,8 @@ public final class MagicCast {
 
     /* プレイヤー毎のセッション（1人1つ想定。複数許す場合はキーを別にする） */
     private static final Map<UUID, Session> SESSIONS = new ConcurrentHashMap<>();
-    private static final Map<UUID, List<Boolean>> SUBLIST = new ConcurrentHashMap<>();
-
+    public static final Map<UUID, List<Boolean>> SUBLIST = new ConcurrentHashMap<>();
+    private static UUID PLAYER_UUID;
     /* ===== 公開API ===== */
 
     /**
@@ -86,6 +86,7 @@ public final class MagicCast {
         System.out.println("[MagicCast] start steps=" + s.steps.size());
         ensureTicker(level.getServer());
         SUBLIST.put(s.playerId,subList);
+        PLAYER_UUID = s.playerId;
         runUntilWaitOrEnd(s, player);
     }
 
@@ -134,6 +135,7 @@ public final class MagicCast {
 
     private static void runUntilWaitOrEnd(Session s, ServerPlayer player) {
         MagicContext ctx = new MagicContext(s.level, player, s.bag);
+        ctx.data().put(Keys.PLAYER_UUID,PLAYER_UUID);
         if (s.bag.get(Keys.POWER).isEmpty()) {
             scorer = (ChantScorer.score(s.bag.get(Keys.CHANT_RAW).orElse(null),player)) / 2;
             ctx.data().put(Keys.POWER, scorer);

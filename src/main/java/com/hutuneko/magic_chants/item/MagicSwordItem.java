@@ -25,14 +25,14 @@ public class MagicSwordItem extends SwordItem {
             if (tag != null && tag.contains(Magic_BindSword.NBT_KEY_CHAIN)) {
                 // チェーン復元（既存）
                 List<MagicCast.Step> steps = readChain(tag.getList(Magic_BindSword.NBT_KEY_CHAIN, Tag.TAG_COMPOUND));
-
+                List<Boolean> sub = readsub(tag.getList(Magic_BindSword.NBT_KEY_SUB,Tag.TAG_COMPOUND));
                 // ★ NBT から詠唱テキスト取得（無ければ空文字）
                 String chantRaw = tag.contains("magic_chants:chant_raw", Tag.TAG_STRING)
                         ? tag.getString("magic_chants:chant_raw")
                         : "";
 
                 // ★ 実行：chantRaw を MagicCast に渡す（Power は MagicCast 側で導出）
-                MagicCast.startChain((ServerLevel) attacker.level(), sp, steps, null, 200, chantRaw);
+                MagicCast.startChain((ServerLevel) attacker.level(), sp, steps, null, 200, chantRaw,sub);
 
                 // 既存：1消費
                 stack.hurtAndBreak(1, sp, p -> p.broadcastBreakEvent(sp.getUsedItemHand()));
@@ -49,6 +49,15 @@ public class MagicSwordItem extends SwordItem {
             ResourceLocation id = new ResourceLocation(c.getString("id"));
             CompoundTag args = c.getCompound("args");
             out.add(new MagicCast.Step(id, args));
+        }
+        return out;
+    }
+    private static List<Boolean> readsub(ListTag list) {
+        List<Boolean> out = new ArrayList<>();
+        for (Tag t : list) {
+            CompoundTag c = (CompoundTag) t;
+            Boolean sub = c.getCompound("sub").contains("sub");
+            out.add(sub);
         }
         return out;
     }
