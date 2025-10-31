@@ -67,7 +67,6 @@ public final class MagicClassRegistry {
             try {
                 SubMagic inst = newsubInstance((Class<? extends SubMagic>) cls, args);
                 System.out.println("[MagicRegistry] RUN: " + id);
-                if (!(MPAPI.calculateMpCost(scorer, ctx))) return false;
                 inst.sub_magic(ctx);
                 return true;
             } catch (ReflectiveOperationException e) {

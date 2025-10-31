@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import javax.annotation.Nullable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -57,7 +58,9 @@ public final class MagicContext {
 
     /** 今の直後に差し込みたいStepを申請（複数OK・順序維持） */
     public void enqueueNext(MagicCast.Step step) {
-        if (step != null) this.enqueueNext.add(step);
+        if (step != null) {
+            this.enqueueNext.add(step);
+        }
     }
     /* package */ List<MagicCast.Step> _drainEnqueued() {
         var out = new ArrayList<MagicCast.Step>(enqueueNext.size());

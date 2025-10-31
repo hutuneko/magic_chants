@@ -1,14 +1,13 @@
 package com.hutuneko.magic_chants.magic.addition;
 
+import com.hutuneko.magic_chants.Magic_chants;
 import com.hutuneko.magic_chants.api.magic.*;
+import net.minecraft.resources.ResourceLocation;
 
 public class Magic_Replay extends SubWithMagic {
 
     @Override
     public void magic_content(MagicContext ctx) {
-        var p = ctx.data().get(Keys.POWER).orElse(null);
-        if (p == null)return;
-
         MagicCast.Step front = ctx.peekFront();
         if (front == null) return;
         ctx.enqueueNext(copyOf(front));
@@ -20,11 +19,9 @@ public class Magic_Replay extends SubWithMagic {
 
     @Override
     public void sub_magic(MagicContext ctx) {
-        var p = ctx.data().get(Keys.POWER).orElse(null);
-        if (p == null)return;
-
-        MagicCast.Step front = ctx.peekMain();
-        if (front == null) return;
-        ctx.enqueueNext(copyOf(front));
+        MagicCast.Step main = ctx.peekMain();
+        System.out.println(main);
+        if (main == null) return;
+        ctx.enqueueNext(copyOf(main));
     }
 }

@@ -145,7 +145,6 @@ public final class MagicCast {
         List<Boolean> subList = SUBLIST.get(s.playerId);
         while (s.index < s.steps.size()) {
             MagicCast.Step step = s.steps.get(s.index);
-
             // WAIT?
             if (isWait(step)) {
                 s.waitToken = step.args().getString("_wait_token");
@@ -155,15 +154,23 @@ public final class MagicCast {
             int idx = s.index;
             ctx._setPeekNextSupplier(() -> idx+1 < s.steps.size() ? s.steps.get(idx+1) : null);
             ctx._setPeekFrontSupplier(() -> idx - 1 > 0 ? s.steps.get(idx - 1) : null);
-            boolean i = true;
-            int j = 0;
-            while (i){
-                if (subList.get(j + idx)){
-                    int k = idx +j;
-                    ctx._setPeekMain(() -> k < s.steps.size() ? s.steps.get(k) : null);
-                    i = true;
+            int next = -1;
+            int limit = Math.min(subList.size(), s.steps.size());
+            System.out.println(s.steps.size());
+            System.out.println(limit);
+            for (int k = idx; k < limit; k++) {
+                if (!subList.get(k)) {
+                    next = k;
+                    break;
                 }
-                j++;
+            }
+            System.out.println(next);
+            final int nextIdx = next;
+            if (nextIdx >= 0) {
+                ctx._setPeekMain(() -> nextIdx < s.steps.size() ? s.steps.get(nextIdx) : null);
+            } else {
+                // 見つからなかった場合は null を返す supplier
+                ctx._setPeekMain(() -> null);
             }
 
             ctx._setPeekRestSupplier(() ->
@@ -171,15 +178,16 @@ public final class MagicCast {
                             : List.of());
             MagicClassRegistry.call(step.id(), ctx, safeArgs(step.args()),scorer,subList.get(s.index));
             s.index++;
-
             //Magic 側が enqueue した Step を i+1 に挿入
             var injected = ctx._drainEnqueued();
             if (!injected.isEmpty()) {
                 List<Step> newList = new ArrayList<>(s.steps);
-                newList.addAll(idx, injected);
+                newList.addAll(injected);
+                System.out.println(newList);
                 s.steps = List.copyOf(newList);
+                subList.add(s.index,false);
             }
-
+            System.out.println(s.steps);
             //delayNext の要求があれば一時停止
             int delay = ctx._drainRequestedDelay();
             System.out.println("[MagicCast] injected=" + injected.size());

@@ -56,28 +56,37 @@ public final class MagicChatServer {
 
         var ctx = CURRENT_SESSIONS.get(sp.getUUID());
         UUID itemUuid = (ctx != null) ? ctx.itemUuid() : null;
-        var item = (ctx != null) ? ctx.itemStack() : ItemStack.EMPTY;
-
         String normalized = raw;
         var steps = MagicLineParser.parse(level,itemUuid, normalized);
         System.out.println(steps);
 
 
         if (!steps.isEmpty()) {
-            PENDING.computeIfAbsent(sp.getUUID(), k -> new java.util.ArrayList<>()).addAll(steps.get(0));
-            CHANT_TEXTS.computeIfAbsent(sp.getUUID(), k -> new java.util.ArrayList<>()).add(raw);
+            // ① 先頭グループは即時実行候補（PENDING）へ
+            PENDING.computeIfAbsent(sp.getUUID(), k -> new ArrayList<>()).addAll(steps.get(0));
+            CHANT_TEXTS.computeIfAbsent(sp.getUUID(), k -> new ArrayList<>()).add(raw);
             System.out.println("[DBG] parsed steps = " + steps.size());
-            steps.remove(0);
 
-            if (!steps.isEmpty()){
-                steps.add(null);
-                List<MagicCast.Step> a = new ArrayList<>();
-                for (List<MagicCast.Step> s :steps){
-                    a.addAll(s);
+            // ② 残りは 1 グループにまとめて SUB の末尾へ追加し、最後に null を1つだけ付与
+            if (steps.size() > 1) {
+                List<MagicCast.Step> sub = SUB.computeIfAbsent(sp.getUUID(), k -> new ArrayList<>());
+
+                // 残りをフラット化して1グループ化
+                List<MagicCast.Step> rest = new ArrayList<>();
+                for (int i = 1; i < steps.size(); i++) {
+                    if (!steps.get(i).isEmpty()) rest.addAll(steps.get(i));
                 }
-                SUB.computeIfAbsent(sp.getUUID(), k ->new ArrayList<>()).addAll(a);
+
+                if (!rest.isEmpty()) {
+                    sub.addAll(rest);
+                    // 末尾に null マーカー（重複防止）
+                    if (sub.isEmpty() || sub.get(sub.size() - 1) != null) {
+                        sub.add(null);
+                    }
+                }
             }
         }
+
     }
 
 
@@ -85,17 +94,16 @@ public final class MagicChatServer {
     public static void handleCommit(ServerPlayer p) {
         var list = PENDING.remove(p.getUUID());
         System.out.println(list);
-        System.out.println("Listnullチェック前");
         if (list == null || list.isEmpty()) return;
-        System.out.println("Listnullチェック後");
         var sublist = SUB.remove(p.getUUID());
-        List<Boolean> bList = new ArrayList<>();
-        list = MagicChantsAPI.mergeWithUnknownMarkers(list,sublist);
+        var result = MagicChantsAPI.mergeWithUnknownMarkersAndFlags(list,sublist);
+        list = result.first;
+        List<Boolean> bList = result.second;
+        System.out.println(list);
         System.out.println(bList);
         // --- 詠唱文をまとめる ---
         var lines = CHANT_TEXTS.remove(p.getUUID());
         String chantRaw = (lines == null || lines.isEmpty()) ? "" : String.join(" ", lines).trim();
-
         // --- 近距離チャット送信 ---
         double radius = 32.0; // 聞こえる範囲（ブロック単位）
         var level = p.serverLevel();

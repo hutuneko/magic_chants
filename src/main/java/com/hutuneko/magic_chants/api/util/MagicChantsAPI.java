@@ -1,43 +1,43 @@
 package com.hutuneko.magic_chants.api.util;
 
 import com.hutuneko.magic_chants.api.magic.MagicCast;
+import com.ibm.icu.impl.Pair;
 
 import java.util.*;
 
 public class MagicChantsAPI {
-        public static List<MagicCast.Step> mergeWithUnknownMarkers(List<MagicCast.Step> a, List<MagicCast.Step> b) {
-            List<List<MagicCast.Step>> bGroups = new ArrayList<>();
-            List<MagicCast.Step> currentGroup = new ArrayList<>();
+    public static Pair<List<MagicCast.Step>, List<Boolean>> mergeWithUnknownMarkersAndFlags(
+            List<MagicCast.Step> a, List<MagicCast.Step> b) {
 
-            for (MagicCast.Step item : b) {
-                if (item == null) {
-                    bGroups.add(new ArrayList<>(currentGroup));
-                    currentGroup.clear();
+        List<MagicCast.Step> out = new ArrayList<>();
+        List<Boolean> flags = new ArrayList<>();
+
+        int ai = 0;
+
+        if (b != null) {
+            for (MagicCast.Step s : b) {
+                if (s == null) {
+                    // null → A の要素を「後に」追加（false）
+                    if (a != null && ai < a.size()) {
+                        out.add(a.get(ai++));
+                        flags.add(false);
+                    }
                 } else {
-                    currentGroup.add(item);
+                    // まず B の要素を入れる（true）
+                    out.add(s);
+                    flags.add(true);
                 }
             }
-            if (!currentGroup.isEmpty()) {
-                bGroups.add(currentGroup);
-            }
-
-            List<MagicCast.Step> result = new ArrayList<>();
-            int groupIndex = 0;
-
-            for (MagicCast.Step itemA : a) {
-                if (groupIndex < bGroups.size()) {
-                    result.addAll(bGroups.get(groupIndex));
-                    groupIndex++;
-                }
-                result.add(itemA);
-            }
-
-            // aの要素が尽きたあとに、まだbのグループが残ってたら追加
-            while (groupIndex < bGroups.size()) {
-                result.addAll(bGroups.get(groupIndex));
-                groupIndex++;
-            }
-
-            return result;
         }
+
+        // Bが尽きたあとにAの残りを追加（false）
+        if (a != null) {
+            while (ai < a.size()) {
+                out.add(a.get(ai++));
+                flags.add(false);
+            }
+        }
+
+        return Pair.of(out, flags);
+    }
 }
