@@ -157,7 +157,6 @@ public final class MagicCast {
             int next = -1;
             int limit = Math.min(subList.size(), s.steps.size());
             System.out.println(s.steps.size());
-            System.out.println(limit);
             for (int k = idx; k < limit; k++) {
                 if (!subList.get(k)) {
                     next = k;
@@ -182,12 +181,12 @@ public final class MagicCast {
             var injected = ctx._drainEnqueued();
             if (!injected.isEmpty()) {
                 List<Step> newList = new ArrayList<>(s.steps);
-                newList.addAll(injected);
-                System.out.println(newList);
+                newList.addAll(s.index,injected);
                 s.steps = List.copyOf(newList);
-                subList.add(s.index,false);
+                for (int i = 0;i < newList.size() - 1;i++){
+                    subList.add(s.index,false);
+                }
             }
-            System.out.println(s.steps);
             //delayNext の要求があれば一時停止
             int delay = ctx._drainRequestedDelay();
             System.out.println("[MagicCast] injected=" + injected.size());

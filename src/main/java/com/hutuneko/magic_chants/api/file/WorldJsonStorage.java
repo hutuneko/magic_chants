@@ -202,14 +202,17 @@ public class WorldJsonStorage {
         String s = raw.trim();
         reloadItemMagics(level, uuid);
 
-
         var exact = ITEM_EXACT.getOrDefault(uuid, Map.of());
+        System.out.println(exact);
         var v = exact.get(s);
+        System.out.println(v);
         if (v != null) return v;
 
         var triggers = ITEM_TRIGGERS.getOrDefault(uuid, List.of());
         for (TriggerEntry te : triggers) {
+            System.out.println(te);
             var bag = te.match(s);
+            System.out.println(bag);
             if (bag != null) {
                 return te.buildSteps(bag);
             }

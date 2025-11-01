@@ -1,51 +1,13 @@
 {
   "magics": [
     {
-      "chant": "自身",
-      "steps": [{ "id": "magic_chants:magic_self" }]
-    },
-    {
-      "chant": "self",
-      "steps": [{ "id": "magic_chants:magic_self" }]
-    },
-    {
-      "chant": "対象",
-      "steps": [{ "id": "magic_chants:magic_target" }]
-    },
-    {
-      "chant": "target",
-      "steps": [{ "id": "magic_chants:magic_target" }]
-    },
-    {
-      "chant": "対象座標",
-      "steps": [{ "id": "magic_chants:magic_targetpos" }]
-    },
-    {
-      "chant": "targetpos",
-      "steps": [{ "id": "magic_chants:magic_targetpos" }]
-    },
-    {
-      "chant": "雷",
-      "steps": [{ "id": "magic_chants:magic_thunder" }]
-    },
-    {
-      "chant": "thunder",
-      "steps": [{ "id": "magic_chants:magic_thunder" }]
-    },
-    {
-      "chant": [
-        { "type": "regex", "pattern": "爆破" },
-        { "type": "regex", "pattern": "explosion" }
+      "triggers": [
+        { "type": "regex", "pattern": "^剣(?<uses>\\d+)$" },
+        { "type": "regex", "pattern": "^sword\\s*(?<uses>\\d+)$" }
       ],
-      "steps": [{ "id": "magic_chants:magic_explosion" }]
-    },
-    {
-      "chant": "テレポート",
-      "steps": [{ "id": "magic_chants:magic_teleport" }]
-    },
-    {
-      "chant": "teleport",
-      "steps": [{ "id": "magic_chants:magic_teleport" }]
+      "steps": [
+        { "id": "magic_chants:magic_bind_sword", "argsFrom": { "uses": "int" } }
+      ]
     },
     {
       "triggers": [
@@ -57,30 +19,123 @@
       ]
     },
     {
-      "chant": [
-        { "type": "regex", "pattern": "^繰り返し(?<times>\\d+)$" },
-        { "type": "regex", "pattern": "^repeat(?<times>\\d+)$" }
-      ],
+      "chant": "爆破",
       "steps": [
-        { "id": "magic_chants:magic_repeat", "argsFrom": { "times": "int" } }
+        { "id": "magic_chants:magic_explosion" }
       ]
     },
     {
-      "chant": [
-        { "type": "regex", "pattern": "^力(?<power>\\d+)$" },
-        { "type": "regex", "pattern": "^power(?<power>\\d+)$" }
-      ],
+      "chant": "explosion",
       "steps": [
-        { "id": "magic_chants:magic_power", "argsFrom": { "power": "int" } }
+        { "id": "magic_chants:magic_explosion" }
       ]
     },
     {
-      "chant": [
-        { "type": "regex", "pattern": "^剣(?<uses>\\d+)$" },
-        { "type": "regex", "pattern": "^sword\\s*(?<uses>\\d+)$" }
-      ],
+      "chant": "移動",
       "steps": [
-        { "id": "magic_chants:magic_bind_sword", "argsFrom": { "uses": "int" } }
+        { "id": "magic_chants:magic_move" }
+      ]
+    },
+    {
+      "chant": "move",
+      "steps": [
+        { "id": "magic_chants:magic_move" }
+      ]
+    },
+    {
+      "chant": "増殖",
+      "steps": [
+        { "id": "magic_chants:magic_repeat" }
+      ]
+    },
+    {
+      "chant": "repeat",
+      "steps": [
+        { "id": "magic_chants:magic_repeat" }
+      ]
+    },
+    {
+      "chant": "視線",
+      "steps": [
+        { "id": "magic_chants:magic_selfeyes" }
+      ]
+    },
+    {
+      "chant": "eyespos",
+      "steps": [
+        { "id": "magic_chants:magic_selfeyes" }
+      ]
+    },
+    {
+      "chant": "自分",
+      "steps": [
+        { "id": "magic_chants:magic_self" }
+      ]
+    },
+    {
+      "chant": "self",
+      "steps": [
+        { "id": "magic_chants:magic_self" }
+      ]
+    },
+    {
+      "chant": "座標",
+      "steps": [
+        { "id": "magic_chants:magic_selfpos" }
+      ]
+    },
+    {
+      "chant": "pos",
+      "steps": [
+        { "id": "magic_chants:magic_selfpos" }
+      ]
+    },
+    {
+      "chant": "対象",
+      "steps": [
+        { "id": "magic_chants:magic_target" }
+      ]
+    },
+    {
+      "chant": "target",
+      "steps": [
+        { "id": "magic_chants:magic_target" }
+      ]
+    },
+    {
+      "chant": "対象座標",
+      "steps": [
+        { "id": "magic_chants:magic_targetpos" }
+      ]
+    },
+    {
+      "chant": "targetpos",
+      "steps": [
+        { "id": "magic_chants:magic_targetpos" }
+      ]
+    },
+    {
+      "chant": "テレポート",
+      "steps": [
+        { "id": "magic_chants:magic_teleport" }
+      ]
+    },
+    {
+      "chant": "teleport",
+      "steps": [
+        { "id": "magic_chants:magic_teleport" }
+      ]
+    },
+    {
+      "chant": "雷",
+      "steps": [
+        { "id": "magic_chants:magic_thunder" }
+      ]
+    },
+    {
+      "chant": "thunder",
+      "steps": [
+        { "id": "magic_chants:magic_thunder" }
       ]
     },
     {
@@ -99,15 +154,7 @@
       "chant": "kill",
       "steps": [
         { "id": "magic_chants:magic_kill" }
-      ]
-    },
-    {
-      "chant": "移動",
-      "steps": [{ "id": "magic_chants:magic_move" }]
-    },
-    {
-      "chant": "move",
-      "steps": [{ "id": "magic_chants:magic_move" }]
+    ]
     },
     {
       "chant": "再演",
@@ -116,6 +163,14 @@
     {
       "chant": "replay",
       "steps": [{ "id": "magic_chants:magic_replay" }]
+    },
+    {
+      "chant": "ウィザー",
+      "steps": [{ "id": "magic_chants:magic_exhaustion" }]
+    },
+    {
+      "chant": "wither",
+      "steps": [{ "id": "magic_chants:magic_exhaustion" }]
     }
   ]
 }

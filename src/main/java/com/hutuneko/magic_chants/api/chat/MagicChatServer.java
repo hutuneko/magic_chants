@@ -99,8 +99,6 @@ public final class MagicChatServer {
         var result = MagicChantsAPI.mergeWithUnknownMarkersAndFlags(list,sublist);
         list = result.first;
         List<Boolean> bList = result.second;
-        System.out.println(list);
-        System.out.println(bList);
         // --- 詠唱文をまとめる ---
         var lines = CHANT_TEXTS.remove(p.getUUID());
         String chantRaw = (lines == null || lines.isEmpty()) ? "" : String.join(" ", lines).trim();
