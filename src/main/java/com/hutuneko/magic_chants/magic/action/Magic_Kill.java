@@ -7,7 +7,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 
-/** 直後以降のチェーンを“剣に封入”して、以後の発動を剣攻撃トリガに委ねる */
 public class Magic_Kill extends Magic {
     @Override
     public void magic_content(MagicContext ctx) {

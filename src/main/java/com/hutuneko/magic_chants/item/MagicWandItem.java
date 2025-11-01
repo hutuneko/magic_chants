@@ -2,7 +2,7 @@ package com.hutuneko.magic_chants.item;
 
 import com.hutuneko.magic_chants.api.chat.MagicChatHook;
 import com.hutuneko.magic_chants.api.chat.MagicChatServer;
-import com.hutuneko.magic_chants.api.chat.item.ChantItemUtil;
+import com.hutuneko.magic_chants.api.util.ChantItemUtil;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;

@@ -1,4 +1,4 @@
-package com.hutuneko.magic_chants.api.chat;
+package com.hutuneko.magic_chants.api.util;
 
 import com.hutuneko.magic_chants.api.file.WorldJsonStorage;
 import com.hutuneko.magic_chants.api.magic.MagicCast;

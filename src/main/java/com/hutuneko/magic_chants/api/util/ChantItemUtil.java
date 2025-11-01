@@ -1,4 +1,4 @@
-package com.hutuneko.magic_chants.api.chat.item;
+package com.hutuneko.magic_chants.api.util;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

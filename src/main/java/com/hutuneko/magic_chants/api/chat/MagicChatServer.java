@@ -2,6 +2,7 @@ package com.hutuneko.magic_chants.api.chat;
 
 import com.hutuneko.magic_chants.api.magic.MagicCast;
 import com.hutuneko.magic_chants.api.util.MagicChantsAPI;
+import com.hutuneko.magic_chants.api.util.MagicLineParser;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
