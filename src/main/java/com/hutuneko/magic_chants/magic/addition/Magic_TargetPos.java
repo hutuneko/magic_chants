@@ -3,11 +3,7 @@ package com.hutuneko.magic_chants.magic.addition;
 import com.hutuneko.magic_chants.api.magic.Keys;
 import com.hutuneko.magic_chants.api.magic.Magic;
 import com.hutuneko.magic_chants.api.magic.MagicContext;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.AABB;
 
-import java.util.Comparator;
 import java.util.Objects;
 
 public class Magic_TargetPos extends Magic {

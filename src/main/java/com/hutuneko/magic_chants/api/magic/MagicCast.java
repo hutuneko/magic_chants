@@ -65,6 +65,7 @@ public final class MagicCast {
     /* プレイヤー毎のセッション（1人1つ想定。複数許す場合はキーを別にする） */
     private static final Map<UUID, Session> SESSIONS = new ConcurrentHashMap<>();
     public static final Map<UUID, List<Boolean>> SUBLIST = new ConcurrentHashMap<>();
+    public static final Map<UUID, List<String>> STLIST = new ConcurrentHashMap<>();
     private static UUID PLAYER_UUID;
     /* ===== 公開API ===== */
 
@@ -77,7 +78,8 @@ public final class MagicCast {
                                   @Nullable DataBag initialBag,
                                   int timeoutTicks,
                                   String string,
-                                  List<Boolean> subList) {
+                                  List<Boolean> subList
+                                  ) {
         Objects.requireNonNull(level, "level");
         Objects.requireNonNull(steps, "steps");
         Session s = new Session(level, player, steps, initialBag, timeoutTicks, string);
@@ -86,7 +88,15 @@ public final class MagicCast {
         System.out.println("[MagicCast] start steps=" + s.steps.size());
         ensureTicker(level.getServer());
         SUBLIST.put(s.playerId,subList);
+
         PLAYER_UUID = s.playerId;
+        List<String> chats = Arrays.stream(
+                        string.trim()
+                                .split("\\s+")            // 空白の連続で分割
+                )
+                .filter(a -> !a.isEmpty())
+                .toList();
+        STLIST.put(s.playerId,chats);
         runUntilWaitOrEnd(s, player);
     }
 
@@ -119,7 +129,7 @@ public final class MagicCast {
         s.steps = List.copyOf(newList);
         s.waitToken = null;
 
-        runUntilWaitOrEnd(s, player );
+        runUntilWaitOrEnd(s, player);
         return true;
     }
 
@@ -144,6 +154,7 @@ public final class MagicCast {
         }
         List<Boolean> subList = SUBLIST.get(s.playerId);
         while (s.index < s.steps.size()) {
+            System.out.println(subList);
             MagicCast.Step step = s.steps.get(s.index);
             // WAIT?
             if (isWait(step)) {
@@ -175,17 +186,24 @@ public final class MagicCast {
             ctx._setPeekRestSupplier(() ->
                     (idx <= s.steps.size()) ? List.copyOf(s.steps.subList(idx, s.steps.size()))
                             : List.of());
+            ctx.data().put(Keys.CHANT,STLIST.get(s.playerId).get(s.index));
             MagicClassRegistry.call(step.id(), ctx, safeArgs(step.args()),scorer,subList.get(s.index));
             s.index++;
             //Magic 側が enqueue した Step を i+1 に挿入
             var injected = ctx._drainEnqueued();
             if (!injected.isEmpty()) {
+                // steps に差し込み
                 List<Step> newList = new ArrayList<>(s.steps);
-                newList.addAll(s.index,injected);
+                newList.addAll(s.index, injected);
                 s.steps = List.copyOf(newList);
-                for (int i = 0;i < newList.size() - 1;i++){
-                    subList.add(s.index,false);
+
+                // フラグ配列を steps 長に揃える（挿入ぶん false を同位置に挿入）
+                for (int n = 0; n < injected.size(); n++) {
+                    int insertAt = Math.min(s.index + n, subList.size());
+                    subList.add(insertAt, false);
                 }
+                // 念のため最終長も整える
+                ensureFlagsSize(subList, s.steps.size());
             }
             //delayNext の要求があれば一時停止
             int delay = ctx._drainRequestedDelay();
@@ -274,6 +292,10 @@ public final class MagicCast {
         tag.putString("_wait_token", token);
         return new Step(WAIT_ID, tag);
     }
-
-    /* 複数 WAIT をあらかじめ置いておき、あとから何段でも差し込めます。 */
+    private static void ensureFlagsSize(List<Boolean> flags, int size) {
+        // 足りなければ false でパディング
+        while (flags.size() < size) flags.add(Boolean.FALSE);
+        // 長すぎる場合は steps 側に合わせて末尾を削る（安全側）
+        while (flags.size() > size) flags.remove(flags.size() - 1);
+    }
 }

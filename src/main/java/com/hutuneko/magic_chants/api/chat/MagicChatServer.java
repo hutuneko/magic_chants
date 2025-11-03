@@ -85,6 +85,9 @@ public final class MagicChatServer {
                         sub.add(null);
                     }
                 }
+            }else {
+                List<MagicCast.Step> sub = SUB.computeIfAbsent(sp.getUUID(), k -> new ArrayList<>());
+                sub.add(null);
             }
         }
 
@@ -94,11 +97,12 @@ public final class MagicChatServer {
     // チャット閉じ通知（C2S_CommitMagicPacket）でそのまま実行
     public static void handleCommit(ServerPlayer p) {
         var list = PENDING.remove(p.getUUID());
-        System.out.println(list);
+
         if (list == null || list.isEmpty()) return;
         var sublist = SUB.remove(p.getUUID());
         var result = MagicChantsAPI.mergeWithUnknownMarkersAndFlags(list,sublist);
         list = result.first;
+        System.out.println(list);
         List<Boolean> bList = result.second;
         // --- 詠唱文をまとめる ---
         var lines = CHANT_TEXTS.remove(p.getUUID());

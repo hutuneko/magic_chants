@@ -78,5 +78,18 @@ public class MagicRegister {
                 new ResourceLocation(Magic_chants.MODID, "magic_replay"),
                 Magic_Replay.class
         );
+        MagicClassRegistry.registerSpell(
+                new ResourceLocation(Magic_chants.MODID, "magic_break"),
+                Magic_Break.class
+        );
+        MagicClassRegistry.registerSpell(
+                new ResourceLocation(Magic_chants.MODID, "magic_title"),
+                Magic_Title.class
+        );
+
+        MagicClassRegistry.registerSpell(
+                new ResourceLocation(Magic_chants.MODID, "magic_set"),
+                Magic_Set.class
+        );
     }
 }

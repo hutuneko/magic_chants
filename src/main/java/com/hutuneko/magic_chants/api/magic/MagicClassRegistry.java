@@ -67,6 +67,7 @@ public final class MagicClassRegistry {
             try {
                 SubMagic inst = newsubInstance((Class<? extends SubMagic>) cls, args);
                 System.out.println("[MagicRegistry] RUN: " + id);
+
                 inst.sub_magic(ctx);
                 return true;
             } catch (ReflectiveOperationException e) {

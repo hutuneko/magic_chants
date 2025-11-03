@@ -171,6 +171,22 @@
     {
       "chant": "wither",
       "steps": [{ "id": "magic_chants:magic_exhaustion" }]
+    },
+    {
+      "chant": "破壊",
+      "steps": [{ "id": "magic_chants:magic_break" }]
+    },
+    {
+      "chant": "break",
+      "steps": [{ "id": "magic_chants:magic_break" }]
+    },
+    {
+      "chant": "タイトル",
+      "steps": [{ "id": "magic_chants:magic_title" }]
+    },
+    {
+      "chant": "title",
+      "steps": [{ "id": "magic_chants:magic_title" }]
     }
   ]
 }

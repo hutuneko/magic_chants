@@ -13,7 +13,9 @@ public class Magic_Kill extends Magic {
         ServerPlayer player = ctx.player();
         ServerLevel level = ctx.level();
         if (player == null || level.isClientSide()) return;
-        var entity = level.getEntity(ctx.data().get(Keys.TARGET_UUID).orElse(null));
+        var id = ctx.data().get(Keys.TARGET_UUID).orElse(null);
+        if (id == null) return;
+        var entity = level.getEntity(id);
         if (entity == null) return;
         if (entity instanceof LivingEntity living) {
             living.kill();

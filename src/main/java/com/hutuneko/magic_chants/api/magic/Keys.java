@@ -1,8 +1,6 @@
 package com.hutuneko.magic_chants.api.magic;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
@@ -24,4 +22,10 @@ public final class Keys {
             DataKey.of(NS, "target_uuid", UUID_CODEC);
     public static final DataKey<UUID> PLAYER_UUID =
             DataKey.of(NS, "player_uuid", UUID_CODEC);
+    public static final DataKey<String> STRING =
+            DataKey.of(NS, "string", Codec.STRING);
+    public static final DataKey<String> CHANT =
+            DataKey.of(NS, "chant", Codec.STRING);
+    public static final DataKey<Integer> INT =
+            DataKey.of(NS, "int", Codec.INT);
 }

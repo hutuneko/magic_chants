@@ -5,12 +5,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 
 public class Magic_DelayNext extends Magic {
-    private int ticks = 20; // 1秒
-    public Magic_DelayNext() {}
-    public Magic_DelayNext(CompoundTag args) {
-        if (args != null && args.contains("ticks")) this.ticks = Mth.clamp(args.getInt("ticks"), 0, 20 * 60 * 5);
-    }
+    private int ticks = -1; // 1秒
     @Override public void magic_content(MagicContext ctx) {
+        ticks = ctx.data().get(Keys.INT).orElse(null);
+        if (ticks == -1) return;
         if (ticks > 0) ctx.delayNext(ticks);
     }
 }

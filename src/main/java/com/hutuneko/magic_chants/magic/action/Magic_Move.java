@@ -17,7 +17,9 @@ public class Magic_Move extends Magic {
         power = p;
         var level = ctx.level();
         if (level.isClientSide()) return;
-        var entity = level.getEntity(ctx.data().get(Keys.TARGET_UUID).orElse(null));
+        var id = ctx.data().get(Keys.TARGET_UUID).orElse(null);
+        if (id == null) return;
+        var entity = level.getEntity(id);
         if (entity == null) return;
         var eye  = entity.getEyePosition(1.0f);
         var look = entity.getLookAngle();

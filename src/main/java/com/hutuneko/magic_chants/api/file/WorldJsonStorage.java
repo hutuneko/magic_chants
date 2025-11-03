@@ -1,8 +1,8 @@
 package com.hutuneko.magic_chants.api.file;
 
 import com.google.gson.*;
+import com.hutuneko.magic_chants.Magic_chants;
 import com.hutuneko.magic_chants.api.magic.MagicCast;
-import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -203,21 +203,22 @@ public class WorldJsonStorage {
         reloadItemMagics(level, uuid);
 
         var exact = ITEM_EXACT.getOrDefault(uuid, Map.of());
-        System.out.println(exact);
         var v = exact.get(s);
         System.out.println(v);
         if (v != null) return v;
-
-        var triggers = ITEM_TRIGGERS.getOrDefault(uuid, List.of());
-        for (TriggerEntry te : triggers) {
-            System.out.println(te);
-            var bag = te.match(s);
-            System.out.println(bag);
-            if (bag != null) {
-                return te.buildSteps(bag);
-            }
-        }
-        return List.of();
+        List<MagicCast.Step> list = new ArrayList<>();
+        list.add(new MagicCast.Step(new ResourceLocation(Magic_chants.MODID,"magic_set")));
+        return list;
+//        var triggers = ITEM_TRIGGERS.getOrDefault(uuid, List.of());
+//        for (TriggerEntry te : triggers) {
+//            System.out.println(te);
+//            var bag = te.match(s);
+//            System.out.println(bag);
+//            if (bag != null) {
+//                return te.buildSteps(bag);
+//            }
+//        }
+//        return List.of();
     }
     private record StepDef(ResourceLocation id, CompoundTag args, @Nullable Map<String, String> argsFrom) {}
 
