@@ -207,18 +207,18 @@ public class WorldJsonStorage {
         System.out.println(v);
         if (v != null) return v;
         List<MagicCast.Step> list = new ArrayList<>();
+
+        var triggers = ITEM_TRIGGERS.getOrDefault(uuid, List.of());
+        for (TriggerEntry te : triggers) {
+            System.out.println(te);
+            var bag = te.match(s);
+            System.out.println(bag);
+            if (bag != null) {
+                return te.buildSteps(bag);
+            }
+        }
         list.add(new MagicCast.Step(new ResourceLocation(Magic_chants.MODID,"magic_set")));
         return list;
-//        var triggers = ITEM_TRIGGERS.getOrDefault(uuid, List.of());
-//        for (TriggerEntry te : triggers) {
-//            System.out.println(te);
-//            var bag = te.match(s);
-//            System.out.println(bag);
-//            if (bag != null) {
-//                return te.buildSteps(bag);
-//            }
-//        }
-//        return List.of();
     }
     private record StepDef(ResourceLocation id, CompoundTag args, @Nullable Map<String, String> argsFrom) {}
 

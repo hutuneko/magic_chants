@@ -96,14 +96,6 @@ public final class MagicChatServer {
 
     // チャット閉じ通知（C2S_CommitMagicPacket）でそのまま実行
     public static void handleCommit(ServerPlayer p) {
-        var list = PENDING.remove(p.getUUID());
-
-        if (list == null || list.isEmpty()) return;
-        var sublist = SUB.remove(p.getUUID());
-        var result = MagicChantsAPI.mergeWithUnknownMarkersAndFlags(list,sublist);
-        list = result.first;
-        System.out.println(list);
-        List<Boolean> bList = result.second;
         // --- 詠唱文をまとめる ---
         var lines = CHANT_TEXTS.remove(p.getUUID());
         String chantRaw = (lines == null || lines.isEmpty()) ? "" : String.join(" ", lines).trim();
@@ -118,6 +110,23 @@ public final class MagicChatServer {
                 sp.sendSystemMessage(msg);
             }
         }
+        String l = lines.toString();
+        List<String> chats = Arrays.stream(
+                        l.trim()
+                                .replace('\u3000', ' ')  // 全角スペース→半角に正規化
+                                .split("\\s+")            // 空白の連続で分割
+                )
+                .filter(a -> !a.isEmpty())
+                .toList();
+        var list = PENDING.remove(p.getUUID());
+
+        if (list == null || list.isEmpty()) return;
+        var sublist = SUB.remove(p.getUUID());
+        var result = MagicChantsAPI.mergeWithUnknownMarkersAndFlags(list,sublist);
+        list = result.first;
+        System.out.println(list);
+        List<Boolean> bList = result.second;
+
 
         // --- 詠唱を実行 ---
         MagicCast.startChain(level, p, list, null, 20 * 30, chantRaw,bList);
