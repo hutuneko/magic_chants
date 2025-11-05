@@ -92,6 +92,7 @@ public final class MagicCast {
         PLAYER_UUID = s.playerId;
         List<String> chats = Arrays.stream(
                         string.trim()
+                                .replace('\u3000', ' ')  // 全角スペース→半角に正規化
                                 .split("\\s+")            // 空白の連続で分割
                 )
                 .filter(a -> !a.isEmpty())
@@ -186,7 +187,18 @@ public final class MagicCast {
             ctx._setPeekRestSupplier(() ->
                     (idx <= s.steps.size()) ? List.copyOf(s.steps.subList(idx, s.steps.size()))
                             : List.of());
-            ctx.data().put(Keys.CHANT,STLIST.get(s.playerId).get(s.index));
+
+            List<String> chantWords = STLIST.get(s.playerId);
+            String chantAt = "";
+            if (chantWords != null) {
+                if (s.index < chantWords.size()) {
+                    chantAt = chantWords.get(s.index);
+                } else if (!chantWords.isEmpty()) {
+                    // 直前の語を流用（好みで "" にしてもOK）
+                    chantAt = chantWords.get(chantWords.size() - 1);
+                }
+            }
+            ctx.data().put(Keys.CHANT, chantAt);
             MagicClassRegistry.call(step.id(), ctx, safeArgs(step.args()),scorer,subList.get(s.index));
             s.index++;
             //Magic 側が enqueue した Step を i+1 に挿入
