@@ -122,7 +122,7 @@ public final class MagicChatServer {
 
         if (list == null || list.isEmpty()) return;
         var sublist = SUB.remove(p.getUUID());
-        var result = MagicChantsAPI.mergeWithUnknownMarkersAndFlags(list,sublist);
+        var result = MagicChantsAPI.mergeWithUnknownMarkersAndFlagsAndC(list,sublist,chats);
         list = result.first;
         System.out.println(list);
         List<Boolean> bList = result.second;
