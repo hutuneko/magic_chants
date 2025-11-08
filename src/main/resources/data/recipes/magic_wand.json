@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "AA",
+    "AB",
+    "A"
+  ],
+  "key": {
+    "A": { "item": "minecraft:stick" },
+    "B": { "tag": "minecraft:amethyst_shard" }
+  },
+  "result": { "item": "magic_chants:magic_wand", "count": 1 }
+}

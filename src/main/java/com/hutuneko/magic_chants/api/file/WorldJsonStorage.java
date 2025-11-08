@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -114,6 +115,7 @@ public class WorldJsonStorage {
     /** アイテムUUIDごとのキャッシュ（完全一致とトリガー） */
     private static final Map<UUID, Map<String, List<MagicCast.Step>>> ITEM_EXACT = new HashMap<>();
     private static final Map<UUID, List<TriggerEntry>> ITEM_TRIGGERS = new HashMap<>();
+    private static final Map<UUID, Map<String, Map<ResourceLocation, String>>> ITEM_EXACT_TEXTS = new HashMap<>();
 
     /**
      * UUID の定義を再読み込みしてキャッシュへ構築します。
@@ -221,15 +223,61 @@ public class WorldJsonStorage {
         return list;
     }
     private record StepDef(ResourceLocation id, CompoundTag args, @Nullable Map<String, String> argsFrom) {}
+    // 3) Step＋Text（id→文）を一緒に返すレコード
+    public record MagicDef(List<MagicCast.Step> steps,
+                           Map<ResourceLocation, String> textById) {}
+
+    public static MagicDef matchSmartItemWithText(ServerLevel level, UUID uuid, String raw) {
+        if (raw == null) return new MagicDef(List.of(), Map.of());
+        String s = raw.trim();
+        reloadItemMagics(level, uuid);
+
+        // --- exact ---
+        var exact = ITEM_EXACT.getOrDefault(uuid, Map.of());
+        var steps = exact.get(s);
+        if (steps != null) {
+            var textsById = ITEM_EXACT_TEXTS
+                    .getOrDefault(uuid, Map.of())
+                    .getOrDefault(s, Map.of());
+            return new MagicDef(steps, textsById);
+        }
+
+        // --- triggers ---
+        var triggers = ITEM_TRIGGERS.getOrDefault(uuid, List.of());
+        for (TriggerEntry te : triggers) {
+            var bag = te.match(s);
+            if (bag != null) {
+                var outSteps = te.buildSteps(bag);
+                var textsById = te.buildTextById(bag);
+                return new MagicDef(outSteps, textsById);
+            }
+        }
+
+        // --- fallback ---
+        MagicCast.Step def = new MagicCast.Step(new ResourceLocation(Magic_chants.MODID,"magic_set"));
+        return new MagicDef(List.of(def), Map.of(def.id(), raw));
+    }
 
     /** トリガー1件の束（OR 条件）＋発動ステップ */
     private static final class TriggerEntry {
         private final List<OneTrigger> triggers;
         private final List<StepDef> steps;
 
+        // ★追加: 文ビルダー（任意）。nullならデフォルト解決にフォールバック
+        @Nullable
+        private final BiFunction<List<StepDef>, Map<String,String>, Map<ResourceLocation,String>> textBuilder;
+
         TriggerEntry(List<OneTrigger> triggers, List<StepDef> steps) {
+            this(triggers, steps, null);
+        }
+
+        // ★必要ならコンストラクタで渡せるように
+        TriggerEntry(List<OneTrigger> triggers,
+                     List<StepDef> steps,
+                     @Nullable BiFunction<List<StepDef>, Map<String,String>, Map<ResourceLocation,String>> textBuilder) {
             this.triggers = triggers;
             this.steps = steps;
+            this.textBuilder = textBuilder;
         }
 
         /** マッチしたら名前付きグループ値の袋を返す／しなければ null */
@@ -241,11 +289,42 @@ public class WorldJsonStorage {
             return null;
         }
 
-        /** argsFrom を反映して最終 Step を生成 */
+        /** argsFrom を反映して最終 Step を生成（既存） */
         List<MagicCast.Step> buildSteps(@Nullable Map<String, String> captured) {
             return toSteps(steps, captured);
         }
+
+        /** ★追加：このトリガーが作る Step の ID に紐づく文（置換済み）を返す */
+        Map<ResourceLocation, String> buildTextById(@Nullable Map<String, String> captured) {
+            if (textBuilder != null) {
+                return textBuilder.apply(steps, captured);
+            }
+            // デフォルト実装：StepDef から ID を取り、テンプレート解決器で文にする
+            Map<ResourceLocation,String> out = new LinkedHashMap<>();
+            for (StepDef sd : steps) {
+                ResourceLocation id = sd.id();              // ← StepDef から ID を取得できる前提
+                String text = TextTemplates.resolve(id, captured); // ← 下のヘルパー
+                out.put(id, text);
+            }
+            return out;
+        }
     }
+    static final class TextTemplates {
+        private static final Map<ResourceLocation,String> TEMPLATES = new HashMap<>();
+
+        static void put(ResourceLocation id, String tmpl) { TEMPLATES.put(id, tmpl); }
+
+        static String resolve(ResourceLocation id, @Nullable Map<String,String> cap) {
+            String tmpl = TEMPLATES.getOrDefault(id, id.toString() + "*");
+            if (cap == null || cap.isEmpty()) return tmpl;
+            String out = tmpl;
+            for (var e : cap.entrySet()) {
+                out = out.replace("{" + e.getKey() + "}", e.getValue());
+            }
+            return out;
+        }
+    }
+
 
     /** 単一トリガー（contains / startswith / regex） */
     private interface OneTrigger {

@@ -32,7 +32,7 @@ public class MagicSwordItem extends SwordItem {
                         : "";
 
                 // ★ 実行：chantRaw を MagicCast に渡す（Power は MagicCast 側で導出）
-                MagicCast.startChain((ServerLevel) attacker.level(), sp, steps, null, 200, chantRaw,sub);
+                MagicCast.startChain((ServerLevel) attacker.level(), sp, steps, null, 200, chantRaw,sub,null);
 
                 // 既存：1消費
                 stack.hurtAndBreak(1, sp, p -> p.broadcastBreakEvent(sp.getUsedItemHand()));

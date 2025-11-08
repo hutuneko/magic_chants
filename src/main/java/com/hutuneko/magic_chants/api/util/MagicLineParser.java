@@ -2,6 +2,7 @@ package com.hutuneko.magic_chants.api.util;
 
 import com.hutuneko.magic_chants.api.file.WorldJsonStorage;
 import com.hutuneko.magic_chants.api.magic.MagicCast;
+import com.ibm.icu.impl.Pair;
 import net.minecraft.server.level.ServerLevel;
 
 import java.util.*;
@@ -9,8 +10,9 @@ import java.util.*;
 public final class MagicLineParser {
     private MagicLineParser(){}
     /** 詠唱文（完全一致）をJSON辞書から引く */
-    public static List<List<MagicCast.Step>> parse(ServerLevel level, UUID uuid, String chant) {
+    public static Pair<List<List<MagicCast.Step>>, List<WorldJsonStorage.MagicDef>> parse(ServerLevel level, UUID uuid, String chant) {
         List<List<MagicCast.Step>> list = new ArrayList<>();
+        List<WorldJsonStorage.MagicDef> defList = new ArrayList<>();
         List<String> chants = Arrays.stream(
                         chant.trim()
                                 .replace('\u3000', ' ')  // 全角スペース→半角に正規化
@@ -21,10 +23,12 @@ public final class MagicLineParser {
 
         System.out.println(chants);
         for (String chat : chants) {
-            list.add(WorldJsonStorage.matchSmartItem(level, uuid, chat));
+            WorldJsonStorage.MagicDef def = WorldJsonStorage.matchSmartItemWithText(level, uuid, chat);
+            list.add(def.steps());
+            defList.add(def);
             System.out.println(chat);
         }
-        return list;
+        return Pair.of(list,defList) ;
     }
 }
 

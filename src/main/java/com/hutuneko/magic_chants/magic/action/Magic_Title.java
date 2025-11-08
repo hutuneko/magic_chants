@@ -20,7 +20,6 @@ public class Magic_Title extends Magic {
             System.out.println(text);
             if (text == null)return;
             serverPlayer.connection.send(new ClientboundSetTitleTextPacket(Component.literal(text)));
-            serverPlayer.sendSystemMessage(Component.literal(text));
         }
     }
 }

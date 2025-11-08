@@ -78,7 +78,8 @@ public final class MagicCast {
                                   @Nullable DataBag initialBag,
                                   int timeoutTicks,
                                   String string,
-                                  List<Boolean> subList
+                                  List<Boolean> subList,
+                                  @Nullable List<String> st
                                   ) {
         Objects.requireNonNull(level, "level");
         Objects.requireNonNull(steps, "steps");
@@ -88,15 +89,20 @@ public final class MagicCast {
         System.out.println("[MagicCast] start steps=" + s.steps.size());
         ensureTicker(level.getServer());
         SUBLIST.put(s.playerId,subList);
-
+        List<String> chats;
         PLAYER_UUID = s.playerId;
-        List<String> chats = Arrays.stream(
-                        string.trim()
-                                .replace('\u3000', ' ')  // 全角スペース→半角に正規化
-                                .split("\\s+")            // 空白の連続で分割
-                )
-                .filter(a -> !a.isEmpty())
-                .toList();
+        if (st != null && st.isEmpty()) {
+            chats = Arrays.stream(
+                            string.trim()
+                                    .replace('\u3000', ' ')  // 全角スペース→半角に正規化
+                                    .split("\\s+")            // 空白の連続で分割
+                    )
+                    .filter(a -> !a.isEmpty())
+                    .toList();
+        }else {
+            chats = st;
+            System.out.println(st);
+        }
         STLIST.put(s.playerId,chats);
         runUntilWaitOrEnd(s, player);
     }
