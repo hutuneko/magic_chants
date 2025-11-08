@@ -4,11 +4,11 @@
   "pattern": [
     "AA",
     "AB",
-    "A"
+    "A "
   ],
   "key": {
     "A": { "item": "minecraft:stick" },
-    "B": { "tag": "minecraft:amethyst_shard" }
+    "B": { "item": "minecraft:amethyst_shard" }
   },
   "result": { "item": "magic_chants:magic_wand", "count": 1 }
 }
