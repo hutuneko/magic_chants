@@ -5,6 +5,8 @@ import com.hutuneko.magic_chants.api.block.net.C2S_RewriteAndSaveAliases;
 import com.hutuneko.magic_chants.api.block.net.S2C_SyncItemAliases;
 import com.hutuneko.magic_chants.api.chat.net.C2S_CommitMagicPacket;
 import com.hutuneko.magic_chants.api.player.attribute.magic_power.net.S2C_SyncMagicPowerPacket;
+import com.hutuneko.magic_chants.api.player.net.C2S_SetHostLook;
+import com.hutuneko.magic_chants.api.player.net.S2C_Rot;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
@@ -45,6 +47,11 @@ public final class MagicNetwork {
                 .decoder(C2S_RequestItemAliases::decode)
                 .consumerMainThread(C2S_RequestItemAliases::handle)
                 .add();
+        CHANNEL.messageBuilder(C2S_SetHostLook.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(C2S_SetHostLook::encode)
+                .decoder(C2S_SetHostLook::decode)
+                .consumerMainThread(C2S_SetHostLook::handle)
+                .add();
 
         // ★ S2C（クライアントが受信）→ サーバ側でも “登録” は必要（送信時のエンコードに使う）
         CHANNEL.messageBuilder(S2C_SyncMagicPowerPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
@@ -57,6 +64,12 @@ public final class MagicNetwork {
                 .encoder(S2C_SyncItemAliases::encode)
                 .decoder(S2C_SyncItemAliases::decode)
                 .consumerMainThread(S2C_SyncItemAliases::handle)
+                .add();
+
+        CHANNEL.messageBuilder(S2C_Rot.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(S2C_Rot::encode)
+                .decoder(S2C_Rot::decode)
+                .consumerMainThread(S2C_Rot::handle)
                 .add();
 
         System.out.println("[MagicNetwork] Registered " + id + " packets.");

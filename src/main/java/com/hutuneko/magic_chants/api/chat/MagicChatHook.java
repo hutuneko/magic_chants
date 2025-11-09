@@ -23,15 +23,6 @@ public final class MagicChatHook {
     private static InteractionHand currentHand;
     private static ItemStack currentItemStack;
 
-//    public static void openMagicChatSession() {
-//        var mc = Minecraft.getInstance();
-//        if (mc == null) return;
-//        if (mc.player == null || mc.level == null) return;
-//
-//        magicSessionActive = true;
-//        mc.execute(() -> mc.setScreen(new MagicChatScreen()));
-//    }
-
     public static void openMagicChatSession(UUID itemUuid, InteractionHand hand, ItemStack itemStack, Player player) {
         currentItemUuid = itemUuid;
         currentHand = hand;

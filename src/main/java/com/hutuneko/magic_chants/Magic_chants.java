@@ -21,7 +21,6 @@ public class Magic_chants {
         MagicRegister.init();
         MagicItems.register(modEventBus);
         MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.addListener(this::setup);
         ModRegistry.register(modEventBus);
         MagicAttributes.ATTRIBUTES.register(modEventBus);
     }

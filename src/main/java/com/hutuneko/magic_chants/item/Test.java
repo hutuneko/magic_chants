@@ -19,7 +19,7 @@ public class Test extends Item {
         ItemStack stack = player.getItemInHand(hand);
 
         // ⚙️ サーバー側：安全な置き換えでUUID付与＋同期
-        if (!level.isClientSide && player instanceof ServerPlayer sp) {
+        if (player instanceof ServerPlayer sp) {
             if (player.isShiftKeyDown()) {
                 ForgeEvent.spiritification(level,sp);
             } else {

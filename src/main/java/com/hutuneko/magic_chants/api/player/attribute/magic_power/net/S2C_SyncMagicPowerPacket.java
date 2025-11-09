@@ -9,8 +9,8 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 public class S2C_SyncMagicPowerPacket {
-    private final double mp;
-    private final double maxMp;
+    public final double mp;
+    public final double maxMp;
 
     public S2C_SyncMagicPowerPacket(double mp, double maxMp) {
         this.mp = mp;

@@ -27,7 +27,7 @@ public final class LookControlUtil {
     }
 
     /** 直接回す（頭・体・視線を揃える） */
-    private static void setAllRotations(LivingEntity le, float yaw, float pitch) {
+    public static void setAllRotations(LivingEntity le, float yaw, float pitch) {
         le.setYRot(yaw);
         le.setXRot(pitch);
 

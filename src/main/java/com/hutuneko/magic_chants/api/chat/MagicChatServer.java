@@ -13,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,8 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Mod.EventBusSubscriber
 public final class MagicChatServer {
 
-    private static final Map<UUID, List<MagicCast.Step>> PENDING = new ConcurrentHashMap<>();
-    private static final Map<UUID, List<MagicCast.Step>> SUB = new ConcurrentHashMap<>();
     private static final Map<UUID, List<WorldJsonStorage.MagicDef>> DEF = new ConcurrentHashMap<>();
     private static final Map<UUID, List<WorldJsonStorage.MagicDef>> DEFSUB = new ConcurrentHashMap<>();
     public static final Map<UUID, CurrentMagicContext> CURRENT_SESSIONS = new ConcurrentHashMap<>();
@@ -69,7 +68,6 @@ public final class MagicChatServer {
 
         if (!steps.isEmpty()) {
             // ① 先頭グループは即時実行候補（PENDING）へ
-            PENDING.computeIfAbsent(sp.getUUID(), k -> new ArrayList<>()).addAll(steps.get(0));
             CHANT_TEXTS.computeIfAbsent(sp.getUUID(), k -> new ArrayList<>()).add(raw);
             List<WorldJsonStorage.MagicDef> def = p.second;
             DEF.computeIfAbsent(sp.getUUID(),k -> new ArrayList<>()).add(def.get(0));
@@ -77,21 +75,14 @@ public final class MagicChatServer {
 
 
             // ② 残りは 1 グループにまとめて SUB の末尾へ追加し、最後に null を1つだけ付与
-            List<MagicCast.Step> sub = SUB.computeIfAbsent(sp.getUUID(), k -> new ArrayList<>());
+            List<WorldJsonStorage.MagicDef> sub = DEFSUB.computeIfAbsent(sp.getUUID(),k -> new ArrayList<>());
             if (steps.size() > 1) {
-
-                // 残りをフラット化して1グループ化
-                List<MagicCast.Step> rest = new ArrayList<>();
-                for (int i = 1; i < steps.size(); i++) {
-                    if (!steps.get(i).isEmpty()) rest.addAll(steps.get(i));
-                }
                 List<WorldJsonStorage.MagicDef> a = new ArrayList<>();
                 for (int i = 1; i < def.size(); i++) {
                     if (!(def.get(i) == null)) a.add(def.get(i));
                 }
-                DEFSUB.computeIfAbsent(sp.getUUID(),k -> new ArrayList<>()).addAll(a);
-                if (!rest.isEmpty()) {
-                    sub.addAll(rest);
+                if (!a.isEmpty()) {
+                    sub.addAll(a);
                     // 末尾に null マーカー（重複防止）
                     if (sub.isEmpty() || sub.get(sub.size() - 1) != null) {
                         sub.add(null);
@@ -101,12 +92,12 @@ public final class MagicChatServer {
                 sub.add(null);
             }
         }
-
     }
 
 
     // チャット閉じ通知（C2S_CommitMagicPacket）でそのまま実行
     public static void handleCommit(ServerPlayer p) {
+        System.out.println("[DEBUG] handleCommit called for player " + p.getName().getString());
         // --- 詠唱文をまとめる ---
         var lines = CHANT_TEXTS.remove(p.getUUID());
         String chantRaw = (lines == null || lines.isEmpty()) ? "" : String.join(" ", lines).trim();
@@ -121,10 +112,11 @@ public final class MagicChatServer {
                 sp.sendSystemMessage(msg);
             }
         }
-        var sublist = SUB.remove(p.getUUID());
-        var result = MagicChantsAPI.mergeAndAlignC(DEF.get(p.getUUID()),DEFSUB.get(p.getUUID()));
-        var list = result.getLeft();
-        System.out.println(list);
+        Triple<List<MagicCast.Step>, List<Boolean>, List<String>> result = MagicChantsAPI.mergeAndAlignC(DEF.remove(p.getUUID()),DEFSUB.remove(p.getUUID()));
+        System.out.println(result);
+        List<MagicCast.Step> list = result.getLeft();
+        System.out.println("[DEBUG] merged steps list: " + list);
+        System.out.println("[DEBUG] merged steps list size: " + (list != null ? list.size() : "null"));
         List<Boolean> bList = result.getMiddle();
         List<String> s = result.getRight();
 
@@ -133,11 +125,5 @@ public final class MagicChatServer {
 
         // --- 後処理 ---
         clear(p);
-    }
-
-
-    // （任意）キャンセルAPI：ESC時にキャンセルだけしたい等
-    public static void cancel(ServerPlayer p) {
-        PENDING.remove(p.getUUID());
     }
 }

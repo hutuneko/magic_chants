@@ -5,6 +5,7 @@ import com.hutuneko.magic_chants.Magic_chants;
 import com.hutuneko.magic_chants.api.net.MagicNetwork;
 import com.hutuneko.magic_chants.api.player.attribute.magic_power.MagicPowerProvider;
 import com.hutuneko.magic_chants.api.player.attribute.magic_power.net.S2C_SyncMagicPowerPacket;
+import com.hutuneko.magic_chants.api.player.net.S2C_Rot;
 import com.hutuneko.magic_chants.api.util.LookControlUtil;
 import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
@@ -19,6 +20,9 @@ import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -35,13 +39,12 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Mod.EventBusSubscriber(modid = Magic_chants.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ForgeEvent {
@@ -51,7 +54,7 @@ public class ForgeEvent {
         // サーバー側かつ END フェーズでのみ処理
         if (e.phase != TickEvent.Phase.END || e.player.level().isClientSide) return;
 
-        Player player = e.player;
+        ServerPlayer player = (ServerPlayer) e.player;
 
         // カウント更新
         UUID uuid = player.getUUID();
@@ -65,11 +68,12 @@ public class ForgeEvent {
                 double current = pmp.getMP();
                 pmp.setMP(current + 1);
 
-                // クライアントに同期
-                MagicNetwork.CHANNEL.send(
-                        PacketDistributor.PLAYER.with(() -> (ServerPlayer) player),
-                        new S2C_SyncMagicPowerPacket(pmp.getMP(), pmp.getMaxMP())
-                );
+                if (FMLEnvironment.dist.isClient()) {
+                    MagicNetwork.CHANNEL.send(
+                            PacketDistributor.PLAYER.with(() -> player),
+                            new S2C_SyncMagicPowerPacket(pmp.getMP(), pmp.getMaxMP())
+                    );
+                }
             });
         } else {
             tickMap.put(uuid, ticks);
@@ -105,7 +109,8 @@ public class ForgeEvent {
         }
     }
 
-
+    public static final Map<UUID,Float> YROT = new HashMap<>();
+    public static final Map<UUID,Float> XROT = new HashMap<>();
     @SubscribeEvent
     public static void onTick(TickEvent.PlayerTickEvent e) {
         if (e.phase != TickEvent.Phase.END) return;
@@ -113,22 +118,32 @@ public class ForgeEvent {
 
         ServerPlayer sp = (ServerPlayer) e.player;
         if (!sp.getPersistentData().getBoolean("magic_chants:spiritf")) return;
-
-        // まだ重力切ってなければ切る（維持）
+        YROT.put(sp.getUUID(),sp.getYRot());
+        XROT.put(sp.getUUID(),sp.getXRot());
+        MagicNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> sp),new S2C_Rot(sp.getUUID(),sp.getYRot(),sp.getXRot()));
         if (!sp.isNoGravity()) sp.setNoGravity(true);
     }
-    @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onLivingTick(LivingEvent.LivingTickEvent event) {
         LivingEntity e = event.getEntity();
         if (e.level().isClientSide()) return;
         if (!e.getPersistentData().getBoolean("magic_chants:spiritf")) return;
+        UUID uid = e.getPersistentData().getUUID("magic_chants:spiritu");
+        ServerLevel level = e.level().getServer().getLevel(e.level().dimension());
+       Entity entity = level.getEntity(uid);
 
-        // 必要なら noAI 維持
-        if (e instanceof Mob mob && !mob.isNoAi()) mob.setNoAi(true);
+        if (entity != null){
+            Float yaw = YROT.get(entity.getUUID());
+            Float pitch = XROT.get(entity.getUUID());
 
-        // 必要なら、リンク元プレイヤーに時々だけカメラ再送（連発は控える）
-        // ※スパム防止に 1秒毎などで
-        // if ((e.level().getGameTime() & 19) == 0) { ...ClientboundSetCameraPacket(e) ... }
+            if (yaw == null || pitch == null) {
+                // 値がまだ登録されていないならスキップ
+                return;
+            }
+
+            LookControlUtil.setAllRotations(e, yaw, pitch);
+
+        }
     }
 
 
@@ -157,14 +172,24 @@ public class ForgeEvent {
                 p.x, p.y, p.z
         );
     }
-
+    private static final Map<UUID, List<WrappedGoal>> removedGoals = new HashMap<>();
     public static void spiritification(Level level,ServerPlayer sp){
         LivingEntity livingEntity = getNearestLivingEntitySafe(level,sp,1000);
         if (livingEntity == null)return;
         livingEntity.getPersistentData().putBoolean("magic_chants:spiritf",true);
         livingEntity.getPersistentData().putUUID("magic_chants:spiritu",sp.getUUID());
         if (livingEntity instanceof Mob mob) {
-            mob.setNoAi(true);   // AI停止
+            List<WrappedGoal> saved = new ArrayList<>();
+
+            mob.goalSelector.getAvailableGoals().removeIf(g -> {
+                if (g.getGoal() instanceof LookAtPlayerGoal || g.getGoal() instanceof RandomLookAroundGoal) {
+                    saved.add(g); // 保存
+                    return true;  // 削除
+                }
+                return false;
+            });
+
+            removedGoals.put(mob.getUUID(), saved); // 後で再登録用に保存
         }
         sp.getPersistentData().putUUID("magic_chants:spiritu",livingEntity.getUUID());
         sp.getPersistentData().putBoolean("magic_chants:spiritf",true);
@@ -184,7 +209,12 @@ public class ForgeEvent {
             entity.getPersistentData().remove("magic_chants:spiritf");
             entity.getPersistentData().remove("magic_chants:spiritu");
             if (entity instanceof Mob mob) {
-                mob.setNoAi(false);   // AI停止
+                List<WrappedGoal> saved = removedGoals.remove(mob.getUUID());
+                if (saved != null) {
+                    for (WrappedGoal g : saved) {
+                        mob.goalSelector.addGoal(g.getPriority(), g.getGoal());
+                    }
+                }
             }
         }
         sp.getPersistentData().remove("magic_chants:spiritu");

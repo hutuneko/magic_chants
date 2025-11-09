@@ -239,6 +239,9 @@ public class WorldJsonStorage {
             var textsById = ITEM_EXACT_TEXTS
                     .getOrDefault(uuid, Map.of())
                     .getOrDefault(s, Map.of());
+            if (textsById.isEmpty()) {
+                textsById = Map.of(steps.get(0).id(), raw);
+            }
             return new MagicDef(steps, textsById);
         }
 
@@ -249,6 +252,7 @@ public class WorldJsonStorage {
             if (bag != null) {
                 var outSteps = te.buildSteps(bag);
                 var textsById = te.buildTextById(bag);
+
                 return new MagicDef(outSteps, textsById);
             }
         }

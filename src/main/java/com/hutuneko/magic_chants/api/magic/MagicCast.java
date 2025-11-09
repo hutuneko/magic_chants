@@ -81,6 +81,7 @@ public final class MagicCast {
                                   List<Boolean> subList,
                                   @Nullable List<String> st
                                   ) {
+        System.out.println("startChain called"); // 先頭に置く
         Objects.requireNonNull(level, "level");
         Objects.requireNonNull(steps, "steps");
         Session s = new Session(level, player, steps, initialBag, timeoutTicks, string);
@@ -89,6 +90,7 @@ public final class MagicCast {
         System.out.println("[MagicCast] start steps=" + s.steps.size());
         ensureTicker(level.getServer());
         SUBLIST.put(s.playerId,subList);
+
         List<String> chats;
         PLAYER_UUID = s.playerId;
         if (st != null && st.isEmpty()) {
