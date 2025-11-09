@@ -5,6 +5,7 @@ import com.hutuneko.magic_chants.ModRegistry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.items.SlotItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -50,26 +51,43 @@ public class ChantTunerMenu extends AbstractContainerMenu implements Supplier<Ma
         this.world = inv.player.level();
         this.internal = new ItemStackHandler(1);
         BlockPos pos = null;
-            pos = player.getOnPos();
-            this.x = pos.getX();
-            this.y = pos.getY();
-            this.z = pos.getZ();
-            access = ContainerLevelAccess.create(world, pos);
-        this.customSlots.put(0, this.addSlot(new SlotItemHandler(internal, 0, 295, 86) {
-            @Override
-            public void setChanged() {
-                super.setChanged();
-                if (clientSlot0Changed != null) {
-                    clientSlot0Changed.accept(getItem());
-                }
-            }
-        }));
+        pos = player.getOnPos();
+        this.x = pos.getX();
+        this.y = pos.getY();
+        this.z = pos.getZ();
+        access = ContainerLevelAccess.create(world, pos);
+
+        // ★ Slot 0 の定義を、クライアント側ロジックと分離するために、シンプル版に戻す
+        this.customSlots.put(0, this.addSlot(new SlotItemHandler(internal, 0, 295, 86)));
+
+        // ★ ここが最も重要な修正: クライアント側でのみ setupClientOnlySlotLogic を呼び出す
+        if (FMLEnvironment.dist == Dist.CLIENT) { // ★ 環境チェックを追加
+            setupClientOnlySlotLogic();
+        }
 
         for (int si = 0; si < 3; ++si)
             for (int sj = 0; sj < 9; ++sj)
                 this.addSlot(new Slot(inv, sj + (si + 1) * 9, 215 + 8 + sj * 18, 79 + 82 + si * 18));
         for (int si = 0; si < 9; ++si)
             this.addSlot(new Slot(inv, si, 215 + 8 + si * 18, 79 + 140));
+    }
+    @OnlyIn(Dist.CLIENT)
+    private void setupClientOnlySlotLogic() {
+        // Slot 0 を取得し、クライアントでのみ必要な setChanged ロジックを再設定
+        // これはクライアントでのみロード・実行されるため、安全に clientSlot0Changed を参照できる
+        Slot slot0 = this.customSlots.get(0);
+        if (slot0 instanceof SlotItemHandler) {
+            this.customSlots.put(0, this.addSlot(new SlotItemHandler(internal, 0, 295, 86) {
+                @Override
+                public void setChanged() {
+                    super.setChanged();
+                    if (clientSlot0Changed != null) {
+                        clientSlot0Changed.accept(getItem());
+                    }
+                }
+            }));
+            this.slots.set(0, this.customSlots.get(0)); // 既存のスロットを上書き
+        }
     }
     public ChantTunerMenu(int id, Inventory inv, Player player, BlockPos pos) {
         super(ModRegistry.CHANT_TUNER_MENU.get(), id);
@@ -231,7 +249,7 @@ public class ChantTunerMenu extends AbstractContainerMenu implements Supplier<Ma
     }
     public static ChantTunerMenu fromNetwork(int windowId, Inventory playerInventory, FriendlyByteBuf buf) {
         BlockPos pos = buf.readBlockPos();
-        return new ChantTunerMenu(windowId, playerInventory, playerInventory.player);
+        return new ChantTunerMenu(windowId, playerInventory, playerInventory.player, pos);
     }
 
 }

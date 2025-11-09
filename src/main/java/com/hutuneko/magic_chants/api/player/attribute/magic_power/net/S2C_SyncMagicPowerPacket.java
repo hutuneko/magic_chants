@@ -27,15 +27,12 @@ public class S2C_SyncMagicPowerPacket {
     }
 
     public static void handle(S2C_SyncMagicPowerPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            Player player = Minecraft.getInstance().player;
-            if (player == null) return;
-
-            player.getCapability(MagicPowerProvider.MAGIC_POWER).ifPresent(cap -> {
-                cap.setMP(msg.mp);
-                cap.setMaxMP(msg.maxMp);
-            });
+        // ★ DistExecutor を使用して、クライアントでのみ ClientMagicPowerHandler.handle を実行
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            ClientMagicPowerHandler.handle(msg, ctx);
         });
+
+        // サーバー側では何も実行されず、クラッシュしない
         ctx.get().setPacketHandled(true);
     }
 }
