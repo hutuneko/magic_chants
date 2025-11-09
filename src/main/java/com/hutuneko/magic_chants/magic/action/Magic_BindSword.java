@@ -9,7 +9,6 @@ import net.minecraft.nbt.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.util.Mth;
 
 import java.util.List;
 
@@ -19,14 +18,6 @@ public class Magic_BindSword extends Magic {
     public static final String NBT_KEY_CHAIN = "magic_chants:bound_chain";
     public static final String NBT_KEY_SUB = "magic_chants:bound_sub";
     public static final String NBT_KEY_USES  = "magic_chants:uses";
-
-    public Magic_BindSword() {}
-    public Magic_BindSword(CompoundTag args) {
-        if (args != null) {
-            if (args.contains("uses")) this.uses = Mth.clamp(args.getInt("uses"), 1, 999);
-            else if (args.contains("power")) this.uses = Mth.clamp(args.getInt("power"), 1, 999); // 互換
-        }
-    }
 
     @Override
     public void magic_content(MagicContext ctx) {
@@ -63,6 +54,7 @@ public class Magic_BindSword extends Magic {
             }
         }
         String chantRaw = ctx.data().get(Keys.CHANT_RAW).orElse("");
+        uses = ctx.data().get(Keys.INT).orElse(uses);
 
         ItemStack sword = new ItemStack(MagicItems.MAGIC_SWORD.get());
         sword.getOrCreateTag().put(NBT_KEY_CHAIN, chain);

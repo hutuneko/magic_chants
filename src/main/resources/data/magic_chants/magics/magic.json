@@ -1,21 +1,21 @@
 {
   "magics": [
     {
-      "triggers": [
-        { "type": "regex", "pattern": "^剣(?<uses>\\d+)$" },
-        { "type": "regex", "pattern": "^sword\\s*(?<uses>\\d+)$" }
+      "chant": [
+        { "type": "regex", "pattern": "^剣" },
+        { "type": "regex", "pattern": "^sword" }
       ],
       "steps": [
-        { "id": "magic_chants:magic_bind_sword", "argsFrom": { "uses": "int" } }
+        { "id": "magic_chants:magic_bind_sword"}
       ]
     },
     {
-      "triggers": [
-        { "type": "regex", "pattern": "^遅延(?<power>\\d+)$" },
-        { "type": "regex", "pattern": "^delay(?<power>\\d+)$" }
+      "chant": [
+        { "type": "regex", "pattern": "^遅延" },
+        { "type": "regex", "pattern": "^delay" }
       ],
       "steps": [
-        { "id": "magic_chants:magic_delay", "argsFrom": { "power": "int" } }
+        { "id": "magic_chants:magic_delay"}
       ]
     },
     {
