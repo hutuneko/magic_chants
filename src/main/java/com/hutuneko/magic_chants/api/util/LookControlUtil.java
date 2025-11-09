@@ -39,5 +39,21 @@ public final class LookControlUtil {
         le.setYBodyRot(yaw);
         le.setYHeadRot(yaw);
     }
+    public static void forceCameraView(LivingEntity le, float yaw, float pitch) {
+        yaw   = Mth.wrapDegrees(yaw);
+        pitch = Mth.clamp(pitch, -90f, 90f);
+
+        // 本体回転（カメラが参照しやすい）
+        le.setYRot(yaw);  le.yRotO = yaw;
+        le.setXRot(pitch); le.xRotO = pitch;
+
+        // 頭＆体も合わせる（同期ズレ防止）
+        le.setYHeadRot(yaw);
+        le.yHeadRotO = yaw;
+        if (le instanceof Mob mob) {
+            mob.setYBodyRot(yaw);
+        }
+    }
+
 }
 

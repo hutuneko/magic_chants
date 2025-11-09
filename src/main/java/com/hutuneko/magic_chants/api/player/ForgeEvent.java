@@ -6,6 +6,8 @@ import com.hutuneko.magic_chants.api.net.MagicNetwork;
 import com.hutuneko.magic_chants.api.player.attribute.magic_power.MagicPowerProvider;
 import com.hutuneko.magic_chants.api.player.attribute.magic_power.net.S2C_SyncMagicPowerPacket;
 import com.hutuneko.magic_chants.api.util.LookControlUtil;
+import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
 import net.minecraft.network.protocol.game.ClientboundSetCameraPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -98,9 +100,7 @@ public class ForgeEvent {
             UUID uid = dead.getPersistentData().getUUID("magic_chants:spiritu");
             Entity e = level.getEntity(uid);
             if (e instanceof ServerPlayer sp && sp.getPersistentData().getBoolean("magic_chants:spiritf")) {
-                // ここで解除する/別対象へ付け替える等、設計意図に合わせて
                 spiritification(level, sp);
-                // あるいは、再度近傍へ付け替えたいなら spiritification(level, sp) を呼ぶ
             }
         }
     }
@@ -121,27 +121,16 @@ public class ForgeEvent {
     public static void onLivingTick(LivingEvent.LivingTickEvent event) {
         LivingEntity e = event.getEntity();
         if (e.level().isClientSide()) return;
-        System.out.println(0);
         if (!e.getPersistentData().getBoolean("magic_chants:spiritf")) return;
 
-        ServerLevel level = (ServerLevel) e.level();
+        // 必要なら noAI 維持
+        if (e instanceof Mob mob && !mob.isNoAi()) mob.setNoAi(true);
 
-        UUID uid = e.getPersistentData().hasUUID("magic_chants:spiritu")
-                ? e.getPersistentData().getUUID("magic_chants:spiritu") : null;
-        System.out.println(0);
-        if (uid == null) return;
-
-        Entity src = level.getEntity(uid);
-        System.out.println(0);
-        if (src == null) return;
-
-        float yaw   = src.getYRot();
-        float pitch = src.getXRot();
-
-        // ここで“最後に”上書き
-        LookControlUtil.applyLook(e, yaw, pitch);
-        System.out.println(20);
+        // 必要なら、リンク元プレイヤーに時々だけカメラ再送（連発は控える）
+        // ※スパム防止に 1秒毎などで
+        // if ((e.level().getGameTime() & 19) == 0) { ...ClientboundSetCameraPacket(e) ... }
     }
+
 
 
     // 例: プレイヤーから最も近いMob（生物）を探す
@@ -179,7 +168,11 @@ public class ForgeEvent {
         }
         sp.getPersistentData().putUUID("magic_chants:spiritu",livingEntity.getUUID());
         sp.getPersistentData().putBoolean("magic_chants:spiritf",true);
+        sp.teleportTo(livingEntity.getX(), livingEntity.getY() + 2.0, livingEntity.getZ());
         sp.setNoGravity(true);
+        sp.noPhysics = true;
+        sp.setInvulnerable(true);
+        sp.setInvisible(true); // 任意：見えなくする
         sp.connection.send(new ClientboundSetCameraPacket(livingEntity));
     }
     public static void spiritFormRelease(Level level, ServerPlayer sp) {
