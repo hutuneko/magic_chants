@@ -15,7 +15,6 @@ public class MPAPI {
         System.out.println(10);
         player.getCapability(MagicPowerProvider.MAGIC_POWER).ifPresent(pmp -> mp = (int) pmp.getMP());
         int a = mp - mps;
-        //TODO ここのエラー解消
         if (a < 0) return false;
         System.out.println(11);
         player.getCapability(MagicPowerProvider.MAGIC_POWER).ifPresent(pmp -> {
