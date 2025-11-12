@@ -3,9 +3,7 @@ package com.hutuneko.magic_chants;
 import com.hutuneko.magic_chants.api.magic.MagicClassRegistry;
 import com.hutuneko.magic_chants.magic.action.*;
 import com.hutuneko.magic_chants.magic.addition.*;
-import com.hutuneko.magic_chants.magic.target.MagicT_Self;
-import com.hutuneko.magic_chants.magic.target.MagicT_Selfeyespos;
-import com.hutuneko.magic_chants.magic.target.MagicT_Selfpos;
+import com.hutuneko.magic_chants.magic.target.*;
 import net.minecraft.resources.ResourceLocation;
 
 public class MagicRegister {
@@ -20,7 +18,7 @@ public class MagicRegister {
         );
         MagicClassRegistry.registerSpell(
                 new ResourceLocation(Magic_chants.MODID, "magic_selfeyes"),
-                MagicT_Selfeyespos.class
+                Magic_Selfeyespos.class
         );
         MagicClassRegistry.registerSpell(
                 new ResourceLocation(Magic_chants.MODID, "magic_repeat"),
@@ -44,11 +42,11 @@ public class MagicRegister {
         );
         MagicClassRegistry.registerSpell(
                 new ResourceLocation(Magic_chants.MODID, "magic_self"),
-                MagicT_Self.class
+                Magic_Self.class
         );
         MagicClassRegistry.registerSpell(
                 new ResourceLocation(Magic_chants.MODID, "magic_selfpos"),
-                MagicT_Selfpos.class
+                Magic_Selfpos.class
         );
         MagicClassRegistry.registerSpell(
                 new ResourceLocation(Magic_chants.MODID, "magic_targetpos"),
@@ -86,6 +84,19 @@ public class MagicRegister {
                 new ResourceLocation(Magic_chants.MODID, "magic_title"),
                 Magic_Title.class
         );
+        MagicClassRegistry.registerSpell(
+                new ResourceLocation(Magic_chants.MODID, "magic_spend"),
+                Magic_Spend.class
+        );
+        MagicClassRegistry.registerSpell(
+                new ResourceLocation(Magic_chants.MODID, "magic_gethealth"),
+                Magic_GetHealth.class
+        );
+        MagicClassRegistry.registerSpell(
+                new ResourceLocation(Magic_chants.MODID, "magic_getexperience"),
+                Magic_GetExperience.class
+        );
+
 
         MagicClassRegistry.registerSpell(
                 new ResourceLocation(Magic_chants.MODID, "magic_set"),

@@ -1,5 +1,6 @@
 package com.hutuneko.magic_chants.api.magic;
 
+import com.hutuneko.magic_chants.api.magic.target.Target;
 import com.mojang.serialization.Codec;
 import net.minecraft.world.phys.Vec3;
 
@@ -28,4 +29,6 @@ public final class Keys {
             DataKey.of(NS, "chant", Codec.STRING);
     public static final DataKey<Integer> INT =
             DataKey.of(NS, "int", Codec.INT);
+    public static final DataKey<String> TARGET =
+            DataKey.of(NS,"target",Codec.STRING);
 }

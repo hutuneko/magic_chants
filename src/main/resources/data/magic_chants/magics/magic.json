@@ -187,6 +187,30 @@
     {
       "chant": "title",
       "steps": [{ "id": "magic_chants:magic_title" }]
+    },
+    {
+    "chant": "消費",
+    "steps": [{ "id": "magic_chants:magic_spend" }]
+    },
+    {
+      "chant": "spend",
+      "steps": [{ "id": "magic_chants:magic_spend" }]
+    },
+    {
+      "chant": "経験値",
+      "steps": [{ "id": "magic_chants:magic_gethealth" }]
+    },
+    {
+      "chant": "experience",
+      "steps": [{ "id": "magic_chants:magic_gethealth" }]
+    },
+    {
+      "chant": "生命力",
+      "steps": [{ "id": "magic_chants:magic_getexperience" }]
+    },
+    {
+      "chant": "health",
+      "steps": [{ "id": "magic_chants:magic_getexperience" }]
     }
   ]
 }

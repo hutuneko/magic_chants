@@ -1,4 +1,4 @@
-package com.hutuneko.magic_chants.magic.action;
+package com.hutuneko.magic_chants.magic.target;
 
 import com.hutuneko.magic_chants.api.magic.Keys;
 import com.hutuneko.magic_chants.api.magic.MagicContext;
