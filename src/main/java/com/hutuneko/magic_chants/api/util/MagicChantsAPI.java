@@ -6,6 +6,8 @@ import com.hutuneko.magic_chants.api.magic.MagicCast;
 import java.util.*;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Pair;   // 既存
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -163,4 +165,23 @@ public class MagicChantsAPI {
         }
         return out;
     }
+    public static void pullEntityTowards(Entity target, Vec3 center, double strength) {
+        if (target == null || center == null) return;
+
+        Vec3 dir = center.subtract(target.position());
+        double lenSqr = dir.lengthSqr();
+        if (lenSqr < 1e-4) return; // ほぼ同位置なら動かさない
+
+        Vec3 motion = dir.normalize().scale(strength);
+
+        // 摩擦・AI に負けないための最低限の調整
+        if (target.onGround()) {
+            target.setDeltaMovement(target.getDeltaMovement().add(0, 0.1, 0)); // 少し浮かせる
+        }
+
+        target.setDeltaMovement(target.getDeltaMovement().add(motion));
+        target.hasImpulse = true; // これ重要
+        target.hurtMarked = true; // サーバー→クライアント同期
+    }
+
 }

@@ -4,11 +4,9 @@ import com.google.common.collect.Multimap;
 import com.hutuneko.magic_chants.Magic_chants;
 import com.hutuneko.magic_chants.api.net.MagicNetwork;
 import com.hutuneko.magic_chants.api.player.attribute.magic_power.MagicPowerProvider;
-import com.hutuneko.magic_chants.api.player.attribute.magic_power.net.S2C_SyncMagicPowerPacket;
 import com.hutuneko.magic_chants.api.player.net.S2C_Rot;
 import com.hutuneko.magic_chants.api.util.LookControlUtil;
-import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
-import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
+import com.hutuneko.magic_chants.api.util.TickTaskManager;
 import net.minecraft.network.protocol.game.ClientboundSetCameraPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -39,15 +37,19 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.network.PacketDistributor;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Mod.EventBusSubscriber(modid = Magic_chants.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ForgeEvent {
+    @SubscribeEvent
+    public static void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            TickTaskManager.onTick();
+        }
+    }
     private static final Map<UUID, Integer> tickMap = new HashMap<>();
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent e) {

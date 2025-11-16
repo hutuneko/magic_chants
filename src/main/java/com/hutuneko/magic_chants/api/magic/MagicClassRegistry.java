@@ -11,9 +11,9 @@ import java.util.Map;
 public final class MagicClassRegistry {
     private static final Map<ResourceLocation, Class<? extends Magic>> TABLE = new HashMap<>();
 
-    public static void registerSpell(ResourceLocation id, Class<? extends Magic> cls) {
+    public static void registerMagic(ResourceLocation id, Class<? extends Magic> cls) {
         if (TABLE.putIfAbsent(id, cls) != null)
-            throw new IllegalStateException("Duplicate spell id: " + id);
+            throw new IllegalStateException("Duplicate magic id: " + id);
     }
 
     // 生成ヘルパ（CompoundTagコンストラクタ優先→0引数）

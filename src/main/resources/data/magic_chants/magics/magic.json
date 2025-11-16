@@ -211,6 +211,22 @@
     {
       "chant": "health",
       "steps": [{ "id": "magic_chants:magic_gethealth" }]
+    },
+    {
+      "chant": "吸引",
+      "steps": [{ "id": "magic_chants:magic_suction" }]
+    },
+    {
+      "chant": "suction",
+      "steps": [{ "id": "magic_chants:magic_suction" }]
+    },
+    {
+      "chant": "加速",
+      "steps": [{ "id": "magic_chants:magic_accelerate" }]
+    },
+    {
+      "chant": "accelerate",
+      "steps": [{ "id": "magic_chants:magic_accelerate" }]
     }
   ]
 }
