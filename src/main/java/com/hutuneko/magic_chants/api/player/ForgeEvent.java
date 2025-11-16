@@ -67,16 +67,14 @@ public class ForgeEvent {
                 // MP 回復処理
                 double current = pmp.getMP();
                 pmp.setMP(current + 1);
-
-                if (FMLEnvironment.dist.isClient()) {
-                    MagicNetwork.CHANNEL.send(
-                            PacketDistributor.PLAYER.with(() -> player),
-                            new S2C_SyncMagicPowerPacket(pmp.getMP(), pmp.getMaxMP())
-                    );
-                }
+//                    MagicNetwork.CHANNEL.send(
+//                            PacketDistributor.PLAYER.with(() -> player),
+//                            new S2C_SyncMagicPowerPacket(pmp.getMP(), pmp.getMaxMP())
+//                    );
             });
         } else {
             tickMap.put(uuid, ticks);
+
         }
     }
     @SubscribeEvent

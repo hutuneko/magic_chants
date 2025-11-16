@@ -6,6 +6,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -19,7 +20,16 @@ public class S2C_SyncMagicPowerPacket {
         this.maxMp = maxMp;
     }
 
+    // S2C_SyncMagicPowerPacket.java の一時的な修正 (デバッグ用)
+
     public static void encode(S2C_SyncMagicPowerPacket msg, FriendlyByteBuf buf) {
+        // ★ 以下の行を一時的に追加し、クライアント側で実行されることを確認する
+        if (FMLEnvironment.dist.isClient()) {
+            System.err.println("!!! S2C_SyncMagicPowerPacket is encoding on client!");
+            // ★ エラーを発生させてスタックトレースをログに出力させる
+            new RuntimeException("TRACE_ME_TO_FIND_THE_BUG").printStackTrace();
+        }
+
         buf.writeDouble(msg.mp);
         buf.writeDouble(msg.maxMp);
     }

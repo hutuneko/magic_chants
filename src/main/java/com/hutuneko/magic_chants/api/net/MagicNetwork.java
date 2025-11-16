@@ -4,6 +4,7 @@ import com.hutuneko.magic_chants.api.block.net.C2S_RequestItemAliases;
 import com.hutuneko.magic_chants.api.block.net.C2S_RewriteAndSaveAliases;
 import com.hutuneko.magic_chants.api.block.net.S2C_SyncItemAliases;
 import com.hutuneko.magic_chants.api.chat.net.C2S_CommitMagicPacket;
+import com.hutuneko.magic_chants.api.player.attribute.magic_power.net.ClientMagicPowerHandler;
 import com.hutuneko.magic_chants.api.player.attribute.magic_power.net.S2C_SyncMagicPowerPacket;
 import com.hutuneko.magic_chants.api.player.net.C2S_SetHostLook;
 import com.hutuneko.magic_chants.api.player.net.S2C_Rot;
@@ -29,15 +30,9 @@ public final class MagicNetwork {
                 () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals
         );
 
-        // C2S（サーバが受信）パケットの登録
-        // サーバー・クライアント両方で登録が必要（クライアントは送信、サーバーは受信のため）
-        // id は 0 から開始
-        registerC2SPackets(nextId);
-
-        // S2C（クライアントが受信）パケットの登録
-        // クライアント側の handle メソッド（LocalPlayer を参照する可能性が高い）のロードを
-        // DistExecutor を使ってクライアント実行時のみに限定する。
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> registerS2CPackets(nextId)); // ★ ここで分離
+        // ★ 修正: C2SとS2Cの登録を分離せず、順に呼び出す
+        registerC2SPackets(nextId); // サーバー・クライアント両方で実行
+        registerS2CPackets(nextId); // サーバー・クライアント両方で実行
 
         System.out.println("[MagicNetwork] Registered " + nextId + " packets.");
     }
@@ -74,31 +69,41 @@ public final class MagicNetwork {
     }
 
     // --- S2C パケット登録メソッド (クライアント専用) ---
-    // このメソッドは DistExecutor によってクライアント環境でのみ実行される
     private static void registerS2CPackets(int startId) {
         // C2Sの後に続くIDから開始
-        int id = startId;
+        int id = startId; // ★ 修正 1: startId + 1 ではなく、startId から開始
 
         // S2C（クライアントが受信）
         CHANNEL.messageBuilder(S2C_SyncMagicPowerPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(S2C_SyncMagicPowerPacket::encode)
                 .decoder(S2C_SyncMagicPowerPacket::decode)
-                // クライアントでのみ実行可能なハンドラ
-                .consumerMainThread(S2C_SyncMagicPowerPacket::handle)
+                // ★ 修正 2: ClientMagicPowerHandlerの実行をDistExecutorで隔離
+                .consumerMainThread((msg, ctx) -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
+                        ClientMagicPowerHandler.handle((S2C_SyncMagicPowerPacket) msg, ctx)
+                ))
                 .add();
 
         CHANNEL.messageBuilder(S2C_SyncItemAliases.class, id++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(S2C_SyncItemAliases::encode)
                 .decoder(S2C_SyncItemAliases::decode)
-                // クライアントでのみ実行可能なハンドラ
-                .consumerMainThread(S2C_SyncItemAliases::handle)
+                // ★ 同様に隔離
+                .consumerMainThread((msg, ctx) -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
+                        // S2C_SyncItemAliases.handle のロジックを ClientDistExecutor に委譲
+                        // ここに S2C_SyncItemAliases 専用のクライアントハンドラークラスがない場合、
+                        // S2C_SyncItemAliases::handle 自体の中身がクライアント専用であることを確認し、
+                        // 静的メソッド参照ではなく、以下の DistExecutor ラムダに置き換えます。
+                        // 仮に S2C_SyncItemAliases.handle の中身がクライアント専用なら:
+                        S2C_SyncItemAliases.handle((S2C_SyncItemAliases) msg, ctx)
+                ))
                 .add();
 
         CHANNEL.messageBuilder(S2C_Rot.class, id++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(S2C_Rot::encode)
                 .decoder(S2C_Rot::decode)
-                // クライアントでのみ実行可能なハンドラ
-                .consumerMainThread(S2C_Rot::handle)
+                // ★ 同様に隔離
+                .consumerMainThread((msg, ctx) -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
+                        S2C_Rot.handle((S2C_Rot) msg, ctx)
+                ))
                 .add();
 
         MagicNetwork.nextId = id; // id の最終値を更新
