@@ -2,7 +2,11 @@ package com.hutuneko.magic_chants.item;
 
 import com.hutuneko.magic_chants.api.chat.MagicChatHook;
 import com.hutuneko.magic_chants.api.chat.MagicChatServer;
+import com.hutuneko.magic_chants.api.file.AliasRewriter;
+import com.hutuneko.magic_chants.api.file.WorldJsonStorage;
 import com.hutuneko.magic_chants.api.util.ChantItemUtil;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -14,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.UUID;
 
 public class MagicWandItem extends Item {
@@ -49,15 +54,31 @@ public class MagicWandItem extends Item {
         UUID uuid;
 
         // ⚙️ サーバー側：安全な置き換えでUUID付与＋同期
-        if (!level.isClientSide && player instanceof ServerPlayer sp) {
-            uuid = ChantItemUtil.ensureUuidReplace(sp, hand);
+        if(!player.isShiftKeyDown()){
+            if (!level.isClientSide() && player instanceof ServerPlayer sp) {
+                uuid = ChantItemUtil.ensureUuidReplace(sp, hand);
                 MagicChatServer.setCurrent(sp, uuid, hand, stack);
-        }
-        // ⚙️ クライアント側：チャット開く
-        else if (level.isClientSide) {
-            uuid = ChantItemUtil.getUuid(stack);
-            if (uuid != null) {
-                MagicChatHook.openMagicChatSession(uuid, hand, stack, player);
+            }
+            // ⚙️ クライアント側：チャット開く
+            else if (level.isClientSide()) {
+                uuid = ChantItemUtil.getUuid(stack);
+                if (uuid != null) {
+                    MagicChatHook.openMagicChatSession(uuid, hand, stack, player);
+                }
+            }
+        }else {
+            if (!level.isClientSide() && player instanceof ServerPlayer sp){
+                uuid = ChantItemUtil.getUuid(stack);
+                String jsonOut;
+                Object raw = WorldJsonStorage.load((ServerLevel) level, "magics/" + uuid + ".json", Object.class);
+                if (raw == null) {
+                    jsonOut = "{\"magics\":[]}";
+                } else {
+                    jsonOut = AliasRewriter.toAliasLinesFromMagicsB(raw);
+                }
+                Component msg = Component.literal(jsonOut)
+                        .withStyle(ChatFormatting.LIGHT_PURPLE);
+                sp.sendSystemMessage(msg);
             }
         }
 

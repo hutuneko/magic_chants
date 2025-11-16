@@ -67,7 +67,7 @@ public final class AliasRewriter {
         }
         // 右側が空 (= Optional.empty) のときは何もしない（保持）
     }
-    public static String toAliasLinesFromMagics(Object loaded) {
+    public static String toAliasLinesFromMagicsA(Object loaded) {
         StringBuilder sb = new StringBuilder();
         // 重複を避けて順序維持
         java.util.Set<String> seen = new java.util.LinkedHashSet<>();
@@ -84,12 +84,31 @@ public final class AliasRewriter {
                         if (seen.add(s)) sb.append(s).append("=\n");
                         continue;
                     }
-                    // 2) chant が配列(=regex指定)や triggers のみ → 今回はスキップ
-                    //    必要ならここでパターン文字列を "=?" などで出力する処理を足す
                 }
             }
         }
         return sb.toString();
     }
+    public static String toAliasLinesFromMagicsB(Object loaded) {
+        StringBuilder sb = new StringBuilder();
+        // 重複を避けて順序維持
+        java.util.Set<String> seen = new java.util.LinkedHashSet<>();
 
+        if (loaded instanceof java.util.Map<?, ?> root) {
+            Object magics = root.get("magics");
+            if (magics instanceof java.util.List<?> list) {
+                for (Object e : list) {
+                    if (!(e instanceof java.util.Map<?, ?> one)) continue;
+
+                    Object chant = one.get("chant");
+                    // 1) chant が文字列ならそのまま採用
+                    if (chant instanceof String s && !s.isEmpty()) {
+                        if (seen.add(s)) sb.append(s).append("\n");
+                        continue;
+                    }
+                }
+            }
+        }
+        return sb.toString();
+    }
 }

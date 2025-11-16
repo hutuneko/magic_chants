@@ -41,7 +41,7 @@ public record C2S_RewriteAndSaveAliases(UUID itemUuid, String rulesText) {
                     .toJson(com.google.gson.JsonParser.parseString(out));
             WorldJsonStorage.save(sl, "magics/" + m.itemUuid() + ".json", pretty);
             Object o = WorldJsonStorage.load(sl, "magics/" + m.itemUuid() + ".json", Object.class);
-            String j  = AliasRewriter.toAliasLinesFromMagics(o);
+            String j  = AliasRewriter.toAliasLinesFromMagicsA(o);
             // 4) （任意）最新状態をS2Cで返して画面更新
             MagicNetwork.CHANNEL.send(
                     PacketDistributor.PLAYER.with(() -> sp),

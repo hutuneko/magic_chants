@@ -25,9 +25,9 @@ public class S2C_SyncMagicPowerPacket {
     public static void encode(S2C_SyncMagicPowerPacket msg, FriendlyByteBuf buf) {
         // ★ 以下の行を一時的に追加し、クライアント側で実行されることを確認する
         if (FMLEnvironment.dist.isClient()) {
-            System.err.println("!!! S2C_SyncMagicPowerPacket is encoding on client!");
+//            System.err.println("!!! S2C_SyncMagicPowerPacket is encoding on client!");
             // ★ エラーを発生させてスタックトレースをログに出力させる
-            new RuntimeException("TRACE_ME_TO_FIND_THE_BUG").printStackTrace();
+//            new RuntimeException("TRACE_ME_TO_FIND_THE_BUG").printStackTrace();
         }
 
         buf.writeDouble(msg.mp);

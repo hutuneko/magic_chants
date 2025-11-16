@@ -30,7 +30,7 @@ public record C2S_RequestItemAliases(UUID itemUuid) {
             if (raw == null) {
                 jsonOut = "{\"magics\":[]}";
             } else {
-                jsonOut = AliasRewriter.toAliasLinesFromMagics(raw);
+                jsonOut = AliasRewriter.toAliasLinesFromMagicsA(raw);
             }
 
             System.out.println("[C2S] loaded json length=" + jsonOut.length());

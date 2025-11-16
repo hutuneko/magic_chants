@@ -22,7 +22,7 @@ public class Magic_Spend extends Magic {
                 ctx.data().put(Keys.POWER,ctx.data().get(Keys.POWER).orElse(0f) + spends);
             }
             if (spend.equals(Target.XP)) {
-                sp.setExperiencePoints((int) (sp.experienceProgress - spends));
+                sp.setExperienceLevels(sp.experienceLevel - spends);
                 ctx.data().put(Keys.POWER,ctx.data().get(Keys.POWER).orElse(0f) + spends);
             }
         }

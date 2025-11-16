@@ -198,19 +198,19 @@
     },
     {
       "chant": "経験値",
-      "steps": [{ "id": "magic_chants:magic_gethealth" }]
+      "steps": [{ "id": "magic_chants:magic_getexperience" }]
     },
     {
       "chant": "experience",
-      "steps": [{ "id": "magic_chants:magic_gethealth" }]
+      "steps": [{ "id": "magic_chants:magic_getexperience" }]
     },
     {
       "chant": "生命力",
-      "steps": [{ "id": "magic_chants:magic_getexperience" }]
+      "steps": [{ "id": "magic_chants:magic_gethealth" }]
     },
     {
       "chant": "health",
-      "steps": [{ "id": "magic_chants:magic_getexperience" }]
+      "steps": [{ "id": "magic_chants:magic_gethealth" }]
     }
   ]
 }
