@@ -6,6 +6,7 @@ import com.hutuneko.magic_chants.api.block.net.S2C_SyncItemAliases;
 import com.hutuneko.magic_chants.api.chat.net.C2S_CommitMagicPacket;
 import com.hutuneko.magic_chants.api.player.attribute.magic_power.net.ClientMagicPowerHandler;
 import com.hutuneko.magic_chants.api.player.attribute.magic_power.net.S2C_SyncMagicPowerPacket;
+import com.hutuneko.magic_chants.api.player.effect.net.InstantRespawnPacket;
 import com.hutuneko.magic_chants.api.player.net.C2S_SetHostLook;
 import com.hutuneko.magic_chants.api.player.net.S2C_Rot;
 import net.minecraft.resources.ResourceLocation;
@@ -64,6 +65,11 @@ public final class MagicNetwork {
                 .decoder(C2S_SetHostLook::decode)
                 .consumerMainThread(C2S_SetHostLook::handle)
                 .add();
+        CHANNEL.messageBuilder(InstantRespawnPacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(InstantRespawnPacket::encode)
+                .decoder(InstantRespawnPacket::decode)
+                .consumerMainThread(InstantRespawnPacket::handle)
+                .add();
 
         MagicNetwork.nextId = id; // id の最終値を更新
     }
@@ -79,7 +85,7 @@ public final class MagicNetwork {
                 .decoder(S2C_SyncMagicPowerPacket::decode)
                 // ★ 修正 2: ClientMagicPowerHandlerの実行をDistExecutorで隔離
                 .consumerMainThread((msg, ctx) -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
-                        ClientMagicPowerHandler.handle((S2C_SyncMagicPowerPacket) msg, ctx)
+                        ClientMagicPowerHandler.handle(msg, ctx)
                 ))
                 .add();
 
@@ -88,12 +94,7 @@ public final class MagicNetwork {
                 .decoder(S2C_SyncItemAliases::decode)
                 // ★ 同様に隔離
                 .consumerMainThread((msg, ctx) -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
-                        // S2C_SyncItemAliases.handle のロジックを ClientDistExecutor に委譲
-                        // ここに S2C_SyncItemAliases 専用のクライアントハンドラークラスがない場合、
-                        // S2C_SyncItemAliases::handle 自体の中身がクライアント専用であることを確認し、
-                        // 静的メソッド参照ではなく、以下の DistExecutor ラムダに置き換えます。
-                        // 仮に S2C_SyncItemAliases.handle の中身がクライアント専用なら:
-                        S2C_SyncItemAliases.handle((S2C_SyncItemAliases) msg, ctx)
+                        S2C_SyncItemAliases.handle(msg, ctx)
                 ))
                 .add();
 
@@ -102,7 +103,7 @@ public final class MagicNetwork {
                 .decoder(S2C_Rot::decode)
                 // ★ 同様に隔離
                 .consumerMainThread((msg, ctx) -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
-                        S2C_Rot.handle((S2C_Rot) msg, ctx)
+                        S2C_Rot.handle(msg, ctx)
                 ))
                 .add();
 

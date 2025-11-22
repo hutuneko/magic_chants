@@ -7,6 +7,7 @@ import com.hutuneko.magic_chants.api.player.attribute.magic_power.MagicPowerProv
 import com.hutuneko.magic_chants.api.player.net.S2C_Rot;
 import com.hutuneko.magic_chants.api.util.LookControlUtil;
 import com.hutuneko.magic_chants.api.util.TickTaskManager;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.protocol.game.ClientboundSetCameraPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -22,6 +23,7 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -31,7 +33,9 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -305,5 +309,33 @@ public class ForgeEvent {
             throw new RuntimeException(ex);
         }
     }
+    @SubscribeEvent
+    public static void onDeathDrops(LivingDropsEvent event) {
+        if (event.getEntity() instanceof ServerPlayer) {
+            event.getDrops().clear();
+        }
+    }
+    @SubscribeEvent
+    public static void onXpDrop(LivingExperienceDropEvent event) {
+        if (event.getEntity() instanceof ServerPlayer) {
+            event.setDroppedExperience(0);
+        }
+    }
+    @SubscribeEvent
+    public static void onPlayerCloneR(PlayerEvent.Clone event) {
+        if (event.isWasDeath() || event.getOriginal().getPersistentData().getBoolean("magic_chants:respawnf")) {
+            Inventory oldInv = event.getOriginal().getInventory();
+            Inventory newInv = event.getEntity().getInventory();
 
+            ListTag tag = new ListTag();
+            oldInv.save(tag);
+            newInv.load(tag);
+
+            event.getEntity().experienceLevel = event.getOriginal().experienceLevel;
+            event.getEntity().experienceProgress = event.getOriginal().experienceProgress;
+            event.getEntity().totalExperience = event.getOriginal().totalExperience;
+
+            event.getOriginal().getPersistentData().remove("magic_chants:respawnf");
+        }
+    }
 }
