@@ -2,12 +2,15 @@ package com.hutuneko.magic_chants.api.player;
 
 import com.google.common.collect.Multimap;
 import com.hutuneko.magic_chants.Magic_chants;
+import com.hutuneko.magic_chants.ModRegistry;
 import com.hutuneko.magic_chants.api.net.MagicNetwork;
 import com.hutuneko.magic_chants.api.player.attribute.magic_power.MagicPowerProvider;
 import com.hutuneko.magic_chants.api.player.net.S2C_Rot;
 import com.hutuneko.magic_chants.api.util.LookControlUtil;
 import com.hutuneko.magic_chants.api.util.TickTaskManager;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundSetCameraPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -15,6 +18,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -23,7 +28,6 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -33,7 +37,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -73,10 +76,6 @@ public class ForgeEvent {
                 // MP 回復処理
                 double current = pmp.getMP();
                 pmp.setMP(current + 1);
-//                    MagicNetwork.CHANNEL.send(
-//                            PacketDistributor.PLAYER.with(() -> player),
-//                            new S2C_SyncMagicPowerPacket(pmp.getMP(), pmp.getMaxMP())
-//                    );
             });
         } else {
             tickMap.put(uuid, ticks);
@@ -310,32 +309,77 @@ public class ForgeEvent {
         }
     }
     @SubscribeEvent
-    public static void onDeathDrops(LivingDropsEvent event) {
-        if (event.getEntity() instanceof ServerPlayer) {
-            event.getDrops().clear();
+    public static void onExperienceDrop(LivingExperienceDropEvent event) {
+        if (event.getEntity() instanceof Player player) {
+            if (!player.getPersistentData().getBoolean("magic_chants:respawnf"))return;
+            // 経験値オーブの生成をキャンセル
+            event.setCanceled(true);
         }
     }
-    @SubscribeEvent
-    public static void onXpDrop(LivingExperienceDropEvent event) {
-        if (event.getEntity() instanceof ServerPlayer) {
-            event.setDroppedExperience(0);
-        }
-    }
+    public static final HashMap<UUID, CompoundTag> SAVED_INVENTORIES = new HashMap<>();
     @SubscribeEvent
     public static void onPlayerCloneR(PlayerEvent.Clone event) {
-        if (event.isWasDeath() || event.getOriginal().getPersistentData().getBoolean("magic_chants:respawnf")) {
-            Inventory oldInv = event.getOriginal().getInventory();
-            Inventory newInv = event.getEntity().getInventory();
+        if (event.isWasDeath() && event.getOriginal().getPersistentData().getBoolean("magic_chants:respawnf")) {
+            Player newPlayer = event.getEntity();
+            UUID playerId = newPlayer.getUUID();
+            if (SAVED_INVENTORIES.containsKey(playerId)) {
 
-            ListTag tag = new ListTag();
-            oldInv.save(tag);
-            newInv.load(tag);
+                CompoundTag rootTag = SAVED_INVENTORIES.get(playerId);
 
+                // 1. rootTagから "Items" キーで ListTag を取り出す (Tag.TAG_COMPOUND はNBTの種類ID: 10)
+                ListTag inventoryList = rootTag.getList("Items", Tag.TAG_COMPOUND);
+
+                // 2. Inventory.load() に ListTag を渡して、復元する
+                newPlayer.getInventory().load(inventoryList);
+
+                // 💡 修正 2: データの復元が完了したため、HashMapからデータを削除（重要）
+                SAVED_INVENTORIES.remove(playerId);
+            }
             event.getEntity().experienceLevel = event.getOriginal().experienceLevel;
             event.getEntity().experienceProgress = event.getOriginal().experienceProgress;
             event.getEntity().totalExperience = event.getOriginal().totalExperience;
-
+            event.getEntity().addEffect(new MobEffectInstance(c.get(playerId),integerMap.get(playerId)));
             event.getOriginal().getPersistentData().remove("magic_chants:respawnf");
+        }
+    }
+    @SubscribeEvent
+    public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        Player newPlayer = event.getEntity();
+        UUID playerId = newPlayer.getUUID();
+
+        // サーバー側でのみ実行
+        if (newPlayer.level().isClientSide) return;
+
+        if (SAVED_INVENTORIES.containsKey(playerId)&& event.isEndConquered()) {
+
+            CompoundTag rootTag = SAVED_INVENTORIES.remove(playerId);
+
+            // 1. rootTagから "Items" キーで ListTag を取り出す (Tag.TAG_COMPOUND はNBTの種類ID: 10)
+            ListTag inventoryList = rootTag.getList("Items", Tag.TAG_COMPOUND);
+            newPlayer.getInventory().load(inventoryList);
+        }
+
+        // ここに、カスタムのリスポーン位置改変や画面クリア処理を実行してください。
+    }
+    private static final Map<UUID,MobEffect> c = new HashMap<>();
+    private static final Map<UUID,Integer> integerMap = new HashMap<>();
+    @SubscribeEvent
+    public static void onLivingDeaths(LivingDeathEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player&&player.hasEffect(ModRegistry.INFRESPAWN.get())) {
+                // 💡 フラグを確実に立てる
+                player.getPersistentData().putBoolean("magic_chants:respawnf", true);
+
+                // 💡 NBT保存ロジックをここに移動 (LivingDropsEventでやっていたこと)
+                ListTag inventoryList = new ListTag();
+                player.getInventory().save(inventoryList);
+
+                CompoundTag rootTag = new CompoundTag();
+                rootTag.put("Items", inventoryList);
+                CompoundTag effectTag = new CompoundTag();
+                integerMap.put(player.getUUID(),player.getEffect(ModRegistry.INFRESPAWN.get()).getDuration());
+                c.put(player.getUUID(),player.getEffect(ModRegistry.INFRESPAWN.get()).getEffect());
+                SAVED_INVENTORIES.put(player.getUUID(), rootTag);
+
         }
     }
 }

@@ -227,6 +227,14 @@
     {
       "chant": "accelerate",
       "steps": [{ "id": "magic_chants:magic_accelerate" }]
+    },
+    {
+      "chant": "無限蘇生",
+      "steps": [{ "id": "magic_chants:magic_infrespawn" }]
+    },
+    {
+      "chant": "infrespawn",
+      "steps": [{ "id": "magic_chants:magic_infrespawn" }]
     }
   ]
 }

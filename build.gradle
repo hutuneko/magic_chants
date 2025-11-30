@@ -140,7 +140,11 @@ repositories {
     //     dir 'libs'
     // }
 }
-
+repositories {
+    maven {
+        url "https://cursemaven.com"
+    }
+}
 dependencies {
     // Specify the version of Minecraft to use.
     // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
@@ -165,7 +169,9 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-
+    implementation fg.deobf("curse.maven:curios-309927:6418456")
+    implementation fg.deobf("curse.maven:iron-jetpacks-284497:6880323")
+    implementation fg.deobf("curse.maven:cucumber-272335:7180783")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

@@ -1,5 +1,6 @@
 package com.hutuneko.magic_chants.api.player.effect;
 
+import com.hutuneko.magic_chants.ModRegistry;
 import com.hutuneko.magic_chants.api.net.MagicNetwork;
 import com.hutuneko.magic_chants.api.player.effect.net.InstantRespawnPacket;
 import net.minecraft.client.Minecraft;
@@ -20,7 +21,7 @@ public class ScreenWatcher {
         Screen newScreen = event.getNewScreen();
 
         // 死亡画面（DeathScreen）になった瞬間
-        if (newScreen instanceof DeathScreen ) {
+        if (Minecraft.getInstance().player != null && newScreen instanceof DeathScreen && Minecraft.getInstance().player.hasEffect(ModRegistry.INFRESPAWN.get())) {
 
             MagicNetwork.CHANNEL.sendToServer(new InstantRespawnPacket());
 
@@ -28,7 +29,7 @@ public class ScreenWatcher {
             // これにより、パケット送信と画面操作のタイミングの問題を回避します。
             Minecraft.getInstance().execute(() -> {
                 // 画面を消す（Respawn ボタンを押さない）
-//                Minecraft.getInstance().player.respawn();
+                Minecraft.getInstance().player.respawn();
                 Minecraft.getInstance().setScreen(null);
             });
 

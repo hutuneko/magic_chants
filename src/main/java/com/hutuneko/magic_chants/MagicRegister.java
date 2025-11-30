@@ -96,6 +96,11 @@ public class MagicRegister {
                 new ResourceLocation(Magic_chants.MODID, "magic_getexperience"),
                 Magic_GetExperience.class
         );
+        MagicClassRegistry.registerMagic(
+                new ResourceLocation(Magic_chants.MODID, "magic_infrespawn"),
+                Magic_InfRespawn.class
+        );
+
 //        MagicClassRegistry.registerMagic(
 //                new ResourceLocation(Magic_chants.MODID, "magic_suction"),
 //                Magic_Suction.class

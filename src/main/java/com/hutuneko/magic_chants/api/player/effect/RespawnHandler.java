@@ -1,10 +1,12 @@
 package com.hutuneko.magic_chants.api.player.effect;
 
+import com.hutuneko.magic_chants.api.player.ForgeEvent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
 
 public class RespawnHandler {
 
@@ -18,19 +20,9 @@ public class RespawnHandler {
 
         // 2. アイテム保持のためにフラグをセット
         player.getPersistentData().putBoolean("magic_chants:respawnf",true);
-
-        // 3. 確実なリスポーン処理 (ServerPlayerList を使用)
-        // respawn() は新しい ServerPlayer インスタンスを返します
-        ServerPlayer newPlayer = player.server.getPlayerList().respawn(player, false);
-
-        // 4. 新しいプレイヤーに各種効果を適用
-        newPlayer.setHealth(newPlayer.getMaxHealth());
-        newPlayer.getFoodData().setFoodLevel(20);
-        newPlayer.invulnerableTime = 40;
-
-        // 5. エフェクトの表示
-        newPlayer.serverLevel().sendParticles(ParticleTypes.TOTEM_OF_UNDYING,
+        player.serverLevel().sendParticles(ParticleTypes.TOTEM_OF_UNDYING,
                 pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5,
                 30, 0.2, 0.5, 0.2, 0.01);
+        Inventory inventory = player.getInventory();
     }
 }
