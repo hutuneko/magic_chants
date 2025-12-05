@@ -213,28 +213,12 @@
       "steps": [{ "id": "magic_chants:magic_gethealth" }]
     },
     {
-      "chant": "吸引",
-      "steps": [{ "id": "magic_chants:magic_suction" }]
+      "chant": "インスタント蘇生",
+      "steps": [{ "id": "magic_chants:magic_insrespawn" }]
     },
     {
-      "chant": "suction",
-      "steps": [{ "id": "magic_chants:magic_suction" }]
-    },
-    {
-      "chant": "加速",
-      "steps": [{ "id": "magic_chants:magic_accelerate" }]
-    },
-    {
-      "chant": "accelerate",
-      "steps": [{ "id": "magic_chants:magic_accelerate" }]
-    },
-    {
-      "chant": "無限蘇生",
-      "steps": [{ "id": "magic_chants:magic_infrespawn" }]
-    },
-    {
-      "chant": "infrespawn",
-      "steps": [{ "id": "magic_chants:magic_infrespawn" }]
+      "chant": "insrespawn",
+      "steps": [{ "id": "magic_chants:magic_insrespawn" }]
     }
   ]
 }

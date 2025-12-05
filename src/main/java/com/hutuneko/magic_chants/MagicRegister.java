@@ -97,8 +97,8 @@ public class MagicRegister {
                 Magic_GetExperience.class
         );
         MagicClassRegistry.registerMagic(
-                new ResourceLocation(Magic_chants.MODID, "magic_infrespawn"),
-                Magic_InfRespawn.class
+                new ResourceLocation(Magic_chants.MODID, "magic_insrespawn"),
+                Magic_InsRespawn.class
         );
 
 //        MagicClassRegistry.registerMagic(
@@ -110,6 +110,23 @@ public class MagicRegister {
 //                Magic_Accelerate.class
 //        );
 
+        //上のコメントアウトしてる奴の
+//        {
+//            "chant": "吸引",
+//                "steps": [{ "id": "magic_chants:magic_suction" }]
+//        },
+//        {
+//            "chant": "suction",
+//                "steps": [{ "id": "magic_chants:magic_suction" }]
+//        },
+//        {
+//            "chant": "加速",
+//                "steps": [{ "id": "magic_chants:magic_accelerate" }]
+//        },
+//        {
+//            "chant": "accelerate",
+//                "steps": [{ "id": "magic_chants:magic_accelerate" }]
+//        },
 
         MagicClassRegistry.registerMagic(
                 new ResourceLocation(Magic_chants.MODID, "magic_set"),

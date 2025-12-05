@@ -1,7 +1,7 @@
 // ModRegistry.java
 package com.hutuneko.magic_chants;
 
-import com.hutuneko.magic_chants.api.player.effect.InfRespawn;
+import com.hutuneko.magic_chants.api.player.effect.InsRespawn;
 import com.hutuneko.magic_chants.block.ChantTunerBE;
 import com.hutuneko.magic_chants.api.block.gui.ChantTunerMenu;
 import com.hutuneko.magic_chants.block.ChantTunerBlock;
@@ -50,8 +50,8 @@ public final class ModRegistry {
     public static final RegistryObject<MenuType<ChantTunerMenu>> CHANT_TUNER_MENU =
             MENUS.register("chant_tuner", () -> IForgeMenuType.create(ChantTunerMenu::fromNetwork));
 
-    public static final RegistryObject<MobEffect> INFRESPAWN = MOB_EFFECTS.register("corruption",
-            () -> new InfRespawn(MobEffectCategory.HARMFUL, 0xCA8BF7));
+    public static final RegistryObject<MobEffect> INSRESPAWN = MOB_EFFECTS.register("instant_respawn",
+            () -> new InsRespawn(MobEffectCategory.HARMFUL, 0xCA8BF7));
     public static void register(IEventBus bus) {
         BLOCKS.register(bus);
         ITEMS.register(bus);

@@ -6,7 +6,7 @@ import com.hutuneko.magic_chants.api.magic.Magic;
 import com.hutuneko.magic_chants.api.magic.MagicContext;
 import net.minecraft.world.effect.MobEffectInstance;
 
-public class Magic_InfRespawn extends Magic {
+public class Magic_InsRespawn extends Magic {
     @Override
     public void magic_content(MagicContext ctx) {
         if (ctx.player() != null) {
@@ -15,7 +15,7 @@ public class Magic_InfRespawn extends Magic {
             if (p != null) {
                 power = p.intValue();
             }
-            ctx.player().addEffect(new MobEffectInstance(ModRegistry.INFRESPAWN.get(),power * 200));
+            ctx.player().addEffect(new MobEffectInstance(ModRegistry.INSRESPAWN.get(),power * 200));
         }
     }
 }

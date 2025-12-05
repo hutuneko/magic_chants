@@ -1,42 +1,55 @@
 package com.hutuneko.magic_chants.api.player.effect;
 
+import com.hutuneko.magic_chants.Magic_chants;
 import com.hutuneko.magic_chants.ModRegistry;
 import com.hutuneko.magic_chants.api.net.MagicNetwork;
 import com.hutuneko.magic_chants.api.player.effect.net.InstantRespawnPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.DeathScreen;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ScreenEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT)
 public class ScreenWatcher {
 
-    private static Screen lastScreen = null;
+    // ScreenWatcher.java
+    private static int deferredRespawnTicks = 0; // クラスフィールドに追加
 
     @SubscribeEvent
     public static void onScreenOpen(ScreenEvent.Opening event) {
-        Screen newScreen = event.getNewScreen();
-
-        // 死亡画面（DeathScreen）になった瞬間
-        if (Minecraft.getInstance().player != null && newScreen instanceof DeathScreen && Minecraft.getInstance().player.hasEffect(ModRegistry.INFRESPAWN.get())) {
+        if (Minecraft.getInstance().player != null && event.getNewScreen() instanceof DeathScreen && Minecraft.getInstance().player.hasEffect(ModRegistry.INSRESPAWN.get())) {
 
             MagicNetwork.CHANNEL.sendToServer(new InstantRespawnPacket());
 
-            // 修正箇所：画面の変更を次回のティックに予約する
-            // これにより、パケット送信と画面操作のタイミングの問題を回避します。
-            Minecraft.getInstance().execute(() -> {
-                // 画面を消す（Respawn ボタンを押さない）
-                Minecraft.getInstance().player.respawn();
-                Minecraft.getInstance().setScreen(null);
-            });
-
-            event.setCanceled(true); // 念のため、このイベントで画面を開くのをキャンセルする
-
+            // 処理を即座に実行する代わりに、遅延フラグを立てる
+            deferredRespawnTicks = 1;
+            event.setCanceled(true);
         }
-//&& !(lastScreen instanceof DeathScreen)
-        lastScreen = newScreen;
+    }
+
+    // クライアントティックイベントのハンドラを追加
+    @SubscribeEvent
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.END && deferredRespawnTicks > 0) {
+            deferredRespawnTicks--;
+
+            if (deferredRespawnTicks == 0) {
+                // 遅延後に強制リスポーン処理を実行
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.player != null) {
+                    try {
+                        mc.player.respawn();
+                        mc.setScreen(null);
+                    } catch (Throwable t) {
+                        // 予期せぬエラー（LinkageErrorなど）をキャッチし、ゲームをクラッシュさせずにログに出力
+                        mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("§c[Magic Chants] Respawn logic failed defensively. Check log."));
+                        Magic_chants.LOGGER.error("Defensive respawn failed", t);
+                    }
+                }
+            }
+        }
     }
 }

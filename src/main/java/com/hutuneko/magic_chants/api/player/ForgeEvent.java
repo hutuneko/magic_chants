@@ -5,9 +5,11 @@ import com.hutuneko.magic_chants.Magic_chants;
 import com.hutuneko.magic_chants.ModRegistry;
 import com.hutuneko.magic_chants.api.net.MagicNetwork;
 import com.hutuneko.magic_chants.api.player.attribute.magic_power.MagicPowerProvider;
+import com.hutuneko.magic_chants.api.player.effect.RespawnHandler;
 import com.hutuneko.magic_chants.api.player.net.S2C_Rot;
 import com.hutuneko.magic_chants.api.util.LookControlUtil;
 import com.hutuneko.magic_chants.api.util.TickTaskManager;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -18,8 +20,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -299,9 +299,6 @@ public class ForgeEvent {
                 victim.setSecondsOnFire(4 * fire);
             }
 
-            // クリティカル・スイープ等をやりたければここに追加（プレイヤー限定の処理は適宜再現）
-
-            // 耐久減少など（必要なら）
             temp.hurtAndBreak(1, host, h -> h.broadcastBreakEvent(InteractionHand.MAIN_HAND));
 
         } catch (Exception ex) {
@@ -326,19 +323,16 @@ public class ForgeEvent {
 
                 CompoundTag rootTag = SAVED_INVENTORIES.get(playerId);
 
-                // 1. rootTagから "Items" キーで ListTag を取り出す (Tag.TAG_COMPOUND はNBTの種類ID: 10)
                 ListTag inventoryList = rootTag.getList("Items", Tag.TAG_COMPOUND);
 
-                // 2. Inventory.load() に ListTag を渡して、復元する
                 newPlayer.getInventory().load(inventoryList);
 
-                // 💡 修正 2: データの復元が完了したため、HashMapからデータを削除（重要）
                 SAVED_INVENTORIES.remove(playerId);
             }
             event.getEntity().experienceLevel = event.getOriginal().experienceLevel;
             event.getEntity().experienceProgress = event.getOriginal().experienceProgress;
             event.getEntity().totalExperience = event.getOriginal().totalExperience;
-            event.getEntity().addEffect(new MobEffectInstance(c.get(playerId),integerMap.get(playerId)));
+//            event.getEntity().addEffect(new MobEffectInstance(ModRegistry.INFRESPAWN.get(),integerMap.get(playerId)));
             event.getOriginal().getPersistentData().remove("magic_chants:respawnf");
         }
     }
@@ -350,8 +344,20 @@ public class ForgeEvent {
         // サーバー側でのみ実行
         if (newPlayer.level().isClientSide) return;
 
-        if (SAVED_INVENTORIES.containsKey(playerId)&& event.isEndConquered()) {
+        if (SAVED_INVENTORIES.containsKey(playerId)&& event.isEndConquered()&&newPlayer instanceof ServerPlayer serverPlayer) {
+            if (RespawnHandler.ORIGINAL_SPAWN_LOCATIONS.containsKey(playerId)) {
+                // マップから元の地点を取得し、同時に削除する（二度と使われないようにするため）
+                GlobalPos original = RespawnHandler.ORIGINAL_SPAWN_LOCATIONS.remove(playerId);
 
+                // プレイヤーの公式リスポーン地点を元に戻す
+                serverPlayer.setRespawnPosition(
+                        original.dimension(), // ディメンションキー
+                        original.pos(),       // ブロック座標
+                        serverPlayer.getYRot(), // 回転角 (元の角度は保存していないため現在のものを使用)
+                        true,                 // forceSet: 強制的に設定する
+                        false                 // spawn: この設定で即座にテレポートはしない
+                );
+            }
             CompoundTag rootTag = SAVED_INVENTORIES.remove(playerId);
 
             // 1. rootTagから "Items" キーで ListTag を取り出す (Tag.TAG_COMPOUND はNBTの種類ID: 10)
@@ -359,25 +365,20 @@ public class ForgeEvent {
             newPlayer.getInventory().load(inventoryList);
         }
 
-        // ここに、カスタムのリスポーン位置改変や画面クリア処理を実行してください。
     }
-    private static final Map<UUID,MobEffect> c = new HashMap<>();
     private static final Map<UUID,Integer> integerMap = new HashMap<>();
     @SubscribeEvent
     public static void onLivingDeaths(LivingDeathEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player&&player.hasEffect(ModRegistry.INFRESPAWN.get())) {
-                // 💡 フラグを確実に立てる
+        if (event.getEntity() instanceof ServerPlayer player/*&&player.hasEffect(ModRegistry.INFRESPAWN.get())*/) {
                 player.getPersistentData().putBoolean("magic_chants:respawnf", true);
 
-                // 💡 NBT保存ロジックをここに移動 (LivingDropsEventでやっていたこと)
                 ListTag inventoryList = new ListTag();
                 player.getInventory().save(inventoryList);
 
                 CompoundTag rootTag = new CompoundTag();
                 rootTag.put("Items", inventoryList);
                 CompoundTag effectTag = new CompoundTag();
-                integerMap.put(player.getUUID(),player.getEffect(ModRegistry.INFRESPAWN.get()).getDuration());
-                c.put(player.getUUID(),player.getEffect(ModRegistry.INFRESPAWN.get()).getEffect());
+                integerMap.put(player.getUUID(), Objects.requireNonNull(player.getEffect(ModRegistry.INSRESPAWN.get())).getDuration());
                 SAVED_INVENTORIES.put(player.getUUID(), rootTag);
 
         }

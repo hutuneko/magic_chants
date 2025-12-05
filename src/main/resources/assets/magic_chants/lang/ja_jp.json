@@ -1,3 +1,4 @@
 {
-  "item.magic_chants.magic_wand": "魔法の杖"
+  "item.magic_chants.magic_wand": "魔法の杖",
+  "effect.magic_chants.instant_respawn": "即時蘇生"
 }
