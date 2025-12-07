@@ -1,6 +1,7 @@
 // ModRegistry.java
 package com.hutuneko.magic_chants;
 
+import com.hutuneko.magic_chants.api.player.effect.DisguiseCreative;
 import com.hutuneko.magic_chants.api.player.effect.InsRespawn;
 import com.hutuneko.magic_chants.block.ChantTunerBE;
 import com.hutuneko.magic_chants.api.block.gui.ChantTunerMenu;
@@ -52,6 +53,8 @@ public final class ModRegistry {
 
     public static final RegistryObject<MobEffect> INSRESPAWN = MOB_EFFECTS.register("instant_respawn",
             () -> new InsRespawn(MobEffectCategory.HARMFUL, 0xCA8BF7));
+    public static final RegistryObject<MobEffect> DISCREATIVE = MOB_EFFECTS.register("disguise_creative",
+            () -> new DisguiseCreative(MobEffectCategory.HARMFUL, 0xCA8BF7));
     public static void register(IEventBus bus) {
         BLOCKS.register(bus);
         ITEMS.register(bus);

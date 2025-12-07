@@ -5,8 +5,13 @@ import com.hutuneko.magic_chants.api.magic.MagicCast;
 
 import java.util.*;
 
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.tuple.Pair;   // 既存
 import org.apache.commons.lang3.tuple.Triple;
@@ -183,5 +188,40 @@ public class MagicChantsAPI {
         target.hasImpulse = true; // これ重要
         target.hurtMarked = true; // サーバー→クライアント同期
     }
+    public static void setOwnerTagToAllItems(ServerPlayer player) {
+        Inventory inventory = player.getInventory();
 
+        // 💡 プレイヤーインベントリの全スロット数 (36 + 4 + 1 = 41)
+        final int TOTAL_SLOTS = 50;
+
+        // 0 から 40 までループ
+        for (int i = 0; i < TOTAL_SLOTS; ++i) {
+
+            // PlayerInventory.getItem(i) は、iが 36-39 や 40 の場合でも
+            // 内部で防具スロットやオフハンドスロットのアイテムを返します。
+            ItemStack stack = inventory.getItem(i);
+
+            if (!stack.isEmpty()) {
+                // カスタムタグ付与ロジックを適用
+                setOwnerTag(stack, player);
+            }
+        }
+
+        // インベントリに変更を通知
+        inventory.setChanged();
+    }
+    public static ItemStack setOwnerTag(ItemStack stack, Player owner) {
+        // 1. アイテムの持つNBTタグを取得（なければ作成）
+        CompoundTag tag = stack.getOrCreateTag();
+
+        // 2. 独自のCompoundTagを作成し、UUIDを文字列として保存
+        //    カスタムタグ名はユニークなものにしてください (例: "magic_chants")
+        CompoundTag customTag = new CompoundTag();
+        customTag.putUUID("magic_chants:creativeuuid", owner.getUUID());
+
+        // 3. アイテムスタックの NBT にカスタムタグを格納
+        tag.put("magic_chants:creative", customTag);
+
+        return stack;
+    }
 }

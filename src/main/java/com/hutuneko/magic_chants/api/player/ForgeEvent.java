@@ -5,16 +5,18 @@ import com.hutuneko.magic_chants.Magic_chants;
 import com.hutuneko.magic_chants.ModRegistry;
 import com.hutuneko.magic_chants.api.net.MagicNetwork;
 import com.hutuneko.magic_chants.api.player.attribute.magic_power.MagicPowerProvider;
-import com.hutuneko.magic_chants.api.player.effect.RespawnHandler;
 import com.hutuneko.magic_chants.api.player.net.S2C_Rot;
 import com.hutuneko.magic_chants.api.util.LookControlUtil;
+import com.hutuneko.magic_chants.api.util.MagicChantsAPI;
 import com.hutuneko.magic_chants.api.util.TickTaskManager;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundSetCameraPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -31,6 +33,7 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -39,6 +42,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
+import net.minecraftforge.event.entity.living.MobEffectEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -314,6 +318,7 @@ public class ForgeEvent {
         }
     }
     public static final HashMap<UUID, CompoundTag> SAVED_INVENTORIES = new HashMap<>();
+    public static final HashMap<UUID, GlobalPos> GLOBAL_POS_HASH_MAP = new HashMap<>();
     @SubscribeEvent
     public static void onPlayerCloneR(PlayerEvent.Clone event) {
         if (event.isWasDeath() && event.getOriginal().getPersistentData().getBoolean("magic_chants:respawnf")) {
@@ -332,7 +337,21 @@ public class ForgeEvent {
             event.getEntity().experienceLevel = event.getOriginal().experienceLevel;
             event.getEntity().experienceProgress = event.getOriginal().experienceProgress;
             event.getEntity().totalExperience = event.getOriginal().totalExperience;
-//            event.getEntity().addEffect(new MobEffectInstance(ModRegistry.INFRESPAWN.get(),integerMap.get(playerId)));
+            if (GLOBAL_POS_HASH_MAP.containsKey(playerId)) {
+                GlobalPos pos = GLOBAL_POS_HASH_MAP.get(playerId);
+                BlockPos bpos = pos.pos();
+                MinecraftServer server = newPlayer.getServer();
+                if (server != null) {
+                    ServerLevel serverLevel = server.getLevel(pos.dimension());
+                    if (serverLevel != null) {
+                        Entity entity = newPlayer.changeDimension(serverLevel);
+                        if (entity instanceof ServerPlayer player){
+                            player.teleportTo(bpos.getX(),bpos.getY(),bpos.getZ());
+                        }
+                    }
+                }
+                GLOBAL_POS_HASH_MAP.remove(playerId);
+            }
             event.getOriginal().getPersistentData().remove("magic_chants:respawnf");
         }
     }
@@ -345,22 +364,7 @@ public class ForgeEvent {
         if (newPlayer.level().isClientSide) return;
 
         if (SAVED_INVENTORIES.containsKey(playerId)&& event.isEndConquered()&&newPlayer instanceof ServerPlayer serverPlayer) {
-            if (RespawnHandler.ORIGINAL_SPAWN_LOCATIONS.containsKey(playerId)) {
-                // マップから元の地点を取得し、同時に削除する（二度と使われないようにするため）
-                GlobalPos original = RespawnHandler.ORIGINAL_SPAWN_LOCATIONS.remove(playerId);
-
-                // プレイヤーの公式リスポーン地点を元に戻す
-                serverPlayer.setRespawnPosition(
-                        original.dimension(), // ディメンションキー
-                        original.pos(),       // ブロック座標
-                        serverPlayer.getYRot(), // 回転角 (元の角度は保存していないため現在のものを使用)
-                        true,                 // forceSet: 強制的に設定する
-                        false                 // spawn: この設定で即座にテレポートはしない
-                );
-            }
             CompoundTag rootTag = SAVED_INVENTORIES.remove(playerId);
-
-            // 1. rootTagから "Items" キーで ListTag を取り出す (Tag.TAG_COMPOUND はNBTの種類ID: 10)
             ListTag inventoryList = rootTag.getList("Items", Tag.TAG_COMPOUND);
             newPlayer.getInventory().load(inventoryList);
         }
@@ -378,9 +382,96 @@ public class ForgeEvent {
                 CompoundTag rootTag = new CompoundTag();
                 rootTag.put("Items", inventoryList);
                 CompoundTag effectTag = new CompoundTag();
-                integerMap.put(player.getUUID(), Objects.requireNonNull(player.getEffect(ModRegistry.INSRESPAWN.get())).getDuration());
                 SAVED_INVENTORIES.put(player.getUUID(), rootTag);
 
+        }
+    }
+    @SubscribeEvent
+    public static void onPlayerTickCreative(TickEvent.PlayerTickEvent event) {
+        if (event.side.isClient() || event.phase != TickEvent.Phase.START) return;
+        if (!(event.player instanceof ServerPlayer player)) return;
+
+        // 💡 監視フラグ/保存データがある場合のみ実行
+        if (!player.getPersistentData().contains("magic_chants:saved_inventory")) return;
+
+        CompoundTag savedRootTag = player.getPersistentData().getCompound("magic_chants:saved_inventory");
+
+        // --- 現在のインベントリ状態をNBTとして取得 ---
+        ListTag currentInventoryList = new ListTag();
+        player.getInventory().save(currentInventoryList);
+
+        CompoundTag currentRootTag = new CompoundTag();
+        currentRootTag.put(Magic_chants.MODID+"Items", currentInventoryList);
+
+        // --- 変更があったかどうかをチェック ---
+        // NBTのtoString()はパフォーマンスが良いわけではありませんが、
+        // 毎回深いNBT比較を行うよりはシンプルで、多くの変更を検知できます。
+        if (!savedRootTag.equals(currentRootTag)) {
+            // 変更があった場合のみ、保存されたNBTを強制的にロード（ロールバック）
+            ListTag inventoryListToLoad = savedRootTag.getList(Magic_chants.MODID+"Items", Tag.TAG_COMPOUND);
+            player.getInventory().load(inventoryListToLoad);
+
+            // 変更があった場合のみ、クライアントに同期
+            player.containerMenu.sendAllDataToRemote();
+        }
+    }
+    @SubscribeEvent
+    public static void checkEffectRemoved(TickEvent.PlayerTickEvent event) {
+        if (event.side.isClient() || event.phase != TickEvent.Phase.START) return;
+        if (!(event.player instanceof ServerPlayer player)) return;
+
+        // 1. 以前付いていたという記録があるかチェック
+        if (player.getPersistentData().getBoolean("magic_chants:has_corruption")) {
+
+            // 2. 現在エフェクトが付いているかチェック
+            if (!player.hasEffect(ModRegistry.DISCREATIVE.get())) {
+                player.getPersistentData().remove("magic_chants:saved_inventory");
+                // 3. 監視フラグを削除
+                player.getPersistentData().remove("magic_chants:has_corruption");
+                player.gameMode.changeGameModeForPlayer(GameType.SURVIVAL);
+            }
+        }
+    }
+
+    // MobEffectEvent.Added の中で、フラグを立てるロジックを修正
+    @SubscribeEvent
+    public static void onEffectAdded(MobEffectEvent.Added event) {
+        LivingEntity entity = event.getEntity();
+        if (entity instanceof ServerPlayer player){
+            if (event.getEffectInstance().getEffect() == ModRegistry.DISCREATIVE.get()) {
+                MagicChantsAPI.setOwnerTagToAllItems(player);
+                event.getEntity().getPersistentData().putBoolean("magic_chants:has_corruption", true);
+                ListTag inventoryList = new ListTag();
+                player.getInventory().save(inventoryList);
+                CompoundTag rootTag = new CompoundTag();
+                rootTag.put(Magic_chants.MODID+"Items", inventoryList);
+                player.getPersistentData().put("magic_chants:saved_inventory", rootTag);
+                player.gameMode.changeGameModeForPlayer(GameType.CREATIVE);
+            }
+        }
+    }
+    @SubscribeEvent
+    public static void onItemPickup(PlayerEvent.ItemPickupEvent event) {
+        Player player = event.getEntity();
+        ItemStack stack = event.getStack();
+
+        if (stack.hasTag()) {
+            CompoundTag tag = stack.getTag();
+            if (tag != null && tag.contains("magic_chants", Tag.TAG_COMPOUND)) {
+
+                CompoundTag customTag = tag.getCompound("magic_chants");
+
+                if (customTag.contains("magic_chants:creative", Tag.TAG_STRING)) {
+                    UUID uuid = customTag.getUUID("magic_chants:creativeuuid");
+
+                    // 💡 UUIDを比較
+                    if (!(player.getUUID() == uuid)) {
+                        // 所有者ではない場合、アイテム回収をキャンセル
+                        event.setCanceled(true);
+                        event.getOriginalEntity().clearFire();
+                    }
+                }
+            }
         }
     }
 }
