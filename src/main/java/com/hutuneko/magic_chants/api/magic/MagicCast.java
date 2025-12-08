@@ -224,6 +224,7 @@ public final class MagicCast {
                 }
                 // 念のため最終長も整える
                 ensureFlagsSize(subList, s.steps.size());
+                SUBLIST.put(ctx.player().getUUID(), subList);
             }
             //delayNext の要求があれば一時停止
             int delay = ctx._drainRequestedDelay();

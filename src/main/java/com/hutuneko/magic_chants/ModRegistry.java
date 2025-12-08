@@ -6,8 +6,11 @@ import com.hutuneko.magic_chants.api.player.effect.InsRespawn;
 import com.hutuneko.magic_chants.block.ChantTunerBE;
 import com.hutuneko.magic_chants.api.block.gui.ChantTunerMenu;
 import com.hutuneko.magic_chants.block.ChantTunerBlock;
+import com.hutuneko.magic_chants.entity.LandMineEntity;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
@@ -28,8 +31,8 @@ public final class ModRegistry {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registries.ITEM, MODID);
     public static final DeferredRegister<BlockEntityType<?>> BEs = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MODID);
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, MODID);
-    public static final DeferredRegister<MobEffect> MOB_EFFECTS =
-            DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, MODID);
+    public static final DeferredRegister<MobEffect> MOB_EFFECTS = DeferredRegister.create(ForgeRegistries.MOB_EFFECTS, MODID);
+    public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MODID);
 
     // ブロック
     public static final RegistryObject<Block> CHANT_TUNER = BLOCKS.register("chant_tuner", () ->
@@ -55,11 +58,22 @@ public final class ModRegistry {
             () -> new InsRespawn(MobEffectCategory.HARMFUL, 0xCA8BF7));
     public static final RegistryObject<MobEffect> DISCREATIVE = MOB_EFFECTS.register("disguise_creative",
             () -> new DisguiseCreative(MobEffectCategory.HARMFUL, 0xCA8BF7));
+    public static final RegistryObject<EntityType<LandMineEntity>> LAND_MINE =
+            ENTITY_TYPES.register("land_mine",
+                    () -> EntityType.Builder.of(
+                                    // エンティティファクトリ（コンストラクタ参照）
+                                    LandMineEntity::new,
+                                    MobCategory.MISC)
+                            // エンティティの当たり判定のサイズを定義 (幅, 高さ)
+                            .sized(0.5f, 0.1f)
+                            .build("land_mine") // 内部名（MODID:land_mine となる）
+            );
     public static void register(IEventBus bus) {
         BLOCKS.register(bus);
         ITEMS.register(bus);
         BEs.register(bus);
         MENUS.register(bus);
         MOB_EFFECTS.register(bus);
+        ENTITY_TYPES.register(bus);
     }
 }

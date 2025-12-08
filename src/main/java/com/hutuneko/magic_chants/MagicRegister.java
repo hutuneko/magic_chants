@@ -101,6 +101,10 @@ public class MagicRegister {
                 Magic_InsRespawn.class
         );
 
+        MagicClassRegistry.registerMagic(
+                new ResourceLocation(Magic_chants.MODID,"magic_landmine"),
+                Magic_LandMine.class
+        );
 //        MagicClassRegistry.registerMagic(
 //                new ResourceLocation(Magic_chants.MODID, "magic_suction"),
 //                Magic_Suction.class

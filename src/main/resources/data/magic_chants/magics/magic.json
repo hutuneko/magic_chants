@@ -219,6 +219,14 @@
     {
       "chant": "insrespawn",
       "steps": [{ "id": "magic_chants:magic_insrespawn" }]
+    },
+    {
+      "chant": "魔法地雷",
+      "steps": [{ "id": "magic_chants:magic_landmine" }]
+    },
+    {
+      "chant": "landmine",
+      "steps": [{ "id": "magic_chants:magic_landmine" }]
     }
   ]
 }
