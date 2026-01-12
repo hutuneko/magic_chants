@@ -35,7 +35,7 @@ public final class MagicCast {
         return new Step(WAIT_ID, tag);
     }
 
-    private static final ResourceLocation WAIT_ID = new ResourceLocation(Magic_chants.MODID, "_wait");
+    private static final ResourceLocation WAIT_ID = Magic_chants.rl("_wait");
 
     /* ===== セッション ===== */
 

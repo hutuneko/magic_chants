@@ -227,6 +227,14 @@
     {
       "chant": "landmine",
       "steps": [{ "id": "magic_chants:magic_landmine" }]
+    },
+    {
+      "chant": "召喚",
+      "steps": [{ "id": "magic_chants:magic_summon" }]
+    },
+    {
+      "chant": "summon",
+      "steps": [{ "id": "magic_chants:magic_summon" }]
     }
   ]
 }

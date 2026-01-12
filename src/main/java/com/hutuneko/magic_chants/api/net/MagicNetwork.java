@@ -1,5 +1,6 @@
 package com.hutuneko.magic_chants.api.net;
 
+import com.hutuneko.magic_chants.Magic_chants;
 import com.hutuneko.magic_chants.api.block.net.C2S_RequestItemAliases;
 import com.hutuneko.magic_chants.api.block.net.C2S_RewriteAndSaveAliases;
 import com.hutuneko.magic_chants.api.block.net.S2C_SyncItemAliases;
@@ -27,7 +28,7 @@ public final class MagicNetwork {
 
     public static void init() {
         CHANNEL = NetworkRegistry.newSimpleChannel(
-                new ResourceLocation(MODID, "main"),
+                Magic_chants.rl("main"),
                 () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals
         );
 
@@ -71,13 +72,19 @@ public final class MagicNetwork {
                 .consumerMainThread(InstantRespawnPacket::handle)
                 .add();
 
+        CHANNEL.messageBuilder(C2S_EntityGet.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(C2S_EntityGet::encode)
+                .decoder(C2S_EntityGet::decode)
+                .consumerMainThread(C2S_EntityGet::handle)
+                .add();
+
         MagicNetwork.nextId = id; // id の最終値を更新
     }
 
     // --- S2C パケット登録メソッド (クライアント専用) ---
     private static void registerS2CPackets(int startId) {
         // C2Sの後に続くIDから開始
-        int id = startId; // ★ 修正 1: startId + 1 ではなく、startId から開始
+        int id = startId;
 
         // S2C（クライアントが受信）
         CHANNEL.messageBuilder(S2C_SyncMagicPowerPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
@@ -104,6 +111,15 @@ public final class MagicNetwork {
                 // ★ 同様に隔離
                 .consumerMainThread((msg, ctx) -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
                         S2C_Rot.handle(msg, ctx)
+                ))
+                .add();
+
+        CHANNEL.messageBuilder(S2C_EntityGet.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(S2C_EntityGet::encode)
+                .decoder(S2C_EntityGet::decode)
+                // ★ 同様に隔離
+                .consumerMainThread((msg, ctx) -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
+                        S2C_EntityGet.handle(msg, ctx)
                 ))
                 .add();
 

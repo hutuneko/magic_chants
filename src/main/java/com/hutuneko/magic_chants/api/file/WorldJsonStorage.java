@@ -219,7 +219,7 @@ public class WorldJsonStorage {
                 return te.buildSteps(bag);
             }
         }
-        list.add(new MagicCast.Step(new ResourceLocation(Magic_chants.MODID,"magic_set")));
+        list.add(new MagicCast.Step(Magic_chants.rl("magic_set")));
         return list;
     }
     private record StepDef(ResourceLocation id, CompoundTag args, @Nullable Map<String, String> argsFrom) {}
@@ -258,7 +258,7 @@ public class WorldJsonStorage {
         }
 
         // --- fallback ---
-        MagicCast.Step def = new MagicCast.Step(new ResourceLocation(Magic_chants.MODID,"magic_set"));
+        MagicCast.Step def = new MagicCast.Step(Magic_chants.rl("magic_set"));
         return new MagicDef(List.of(def), Map.of(def.id(), raw));
     }
 

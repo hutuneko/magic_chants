@@ -2,9 +2,8 @@ package com.hutuneko.magic_chants;
 
 import com.hutuneko.magic_chants.api.net.MagicNetwork;
 import com.hutuneko.magic_chants.api.player.attribute.MagicAttributes;
-import com.hutuneko.magic_chants.entity.InvisibleLandMineRenderer;
 import com.hutuneko.magic_chants.item.MagicItems;
-import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -21,6 +20,9 @@ public class Magic_chants {
 
     // Define mod id in a common place for everything to reference
     public static final String MODID = "magic_chants";
+    public static ResourceLocation rl(String s){
+        return new ResourceLocation(MODID,s);
+    }
     public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
     public Magic_chants() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();

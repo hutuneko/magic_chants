@@ -89,7 +89,7 @@ public class ForgeEvent {
     @SubscribeEvent
     public static void onAttachCapabilitiesPlayer(AttachCapabilitiesEvent<Entity> event) {
         if (event.getObject() instanceof Player) {
-            event.addCapability(new ResourceLocation(Magic_chants.MODID, "magic_power"),
+            event.addCapability(Magic_chants.rl("magic_power"),
                     new MagicPowerProvider());
         }
     }
