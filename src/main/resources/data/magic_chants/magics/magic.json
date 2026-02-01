@@ -235,6 +235,14 @@
     {
       "chant": "summon",
       "steps": [{ "id": "magic_chants:magic_summon" }]
+    },
+    {
+      "chant": "と",
+      "steps": [{ "id": "magic_chants:magic_and" }]
+    },
+    {
+      "chant": "and",
+      "steps": [{ "id": "magic_chants:magic_and" }]
     }
   ]
 }

@@ -1,4 +1,3 @@
-// ModRegistry.java
 package com.hutuneko.magic_chants;
 
 import com.hutuneko.magic_chants.api.player.effect.DisguiseCreative;
@@ -66,7 +65,7 @@ public final class ModRegistry {
                                     MobCategory.MISC)
                             // エンティティの当たり判定のサイズを定義 (幅, 高さ)
                             .sized(0.5f, 0.1f)
-                            .build("land_mine") // 内部名（MODID:land_mine となる）
+                            .build("land_mine")
             );
     public static void register(IEventBus bus) {
         BLOCKS.register(bus);

@@ -57,26 +57,30 @@ public final class MagicClassRegistry {
 //        }
 //    }
     public static boolean call(ResourceLocation id, MagicContext ctx, CompoundTag args, float scorer, boolean sub) {
-        Class<?> cls;
+        Class<? extends BaseMagic> cls;
         cls = TABLE.get(id);
         if (cls == null) {
             System.out.println("[MagicRegistry] NOT FOUND: " + id);
             return false;
         }
         if (sub) {
-            try {
-                SubMagic inst = newsubInstance((Class<? extends SubMagic>) cls, args);
-                System.out.println("[MagicRegistry] RUN: " + id);
+            if (SubMagic.class.isAssignableFrom(cls)){
+                try {
+                    SubMagic inst = newsubInstance((Class<? extends SubMagic>) cls, args);
+                    System.out.println("[MagicRegistry] RUN: " + id);
 
-                inst.sub_magic(ctx);
-                return true;
-            } catch (ReflectiveOperationException e) {
-                e.printStackTrace();
+                    inst.sub_magic(ctx);
+                    return true;
+                } catch (ReflectiveOperationException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }else {
                 return false;
             }
         }else {
             try {
-                BaseMagic inst = newInstance((Class<? extends BaseMagic>) cls, args);
+                BaseMagic inst = newInstance(cls, args);
                 System.out.println("[MagicRegistry] RUN: " + id);
                 if (!(MPAPI.calculateMpCost(scorer, ctx))) return false;
                 inst.magic_content(ctx);

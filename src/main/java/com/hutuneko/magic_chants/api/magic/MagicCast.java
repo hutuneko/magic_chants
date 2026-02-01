@@ -39,7 +39,7 @@ public final class MagicCast {
 
     /* ===== セッション ===== */
 
-    private static final class Session {
+    public static final class Session {
         final UUID playerId;
         final ServerLevel level;
         List<Step> steps;
@@ -153,7 +153,7 @@ public final class MagicCast {
     /* ===== 実行ループ ===== */
 
     private static void runUntilWaitOrEnd(Session s, ServerPlayer player) {
-        MagicContext ctx = new MagicContext(s.level, player, s.bag);
+        MagicContext ctx = new MagicContext(s.level, player, s.bag,s);
         ctx.data().put(Keys.PLAYER_UUID,PLAYER_UUID);
         if (s.bag.get(Keys.POWER).isEmpty()) {
             scorer = (ChantScorer.score(s.bag.get(Keys.CHANT_RAW).orElse(null),player)) / 2;
@@ -161,8 +161,9 @@ public final class MagicCast {
             System.out.println("[DBG] POWER=" + s.bag.get(Keys.POWER));
             System.out.printf("[MagicCast/ChantScore] '%s' -> %.2f (Power=%.2f)%n", s.bag.get(Keys.CHANT_RAW), scorer, scorer);
         }
-        List<Boolean> subList = SUBLIST.get(s.playerId);
+
         while (s.index < s.steps.size()) {
+            List<Boolean> subList = SUBLIST.get(s.playerId);
             System.out.println(subList);
             MagicCast.Step step = s.steps.get(s.index);
             // WAIT?
@@ -212,17 +213,24 @@ public final class MagicCast {
             //Magic 側が enqueue した Step を i+1 に挿入
             var injected = ctx._drainEnqueued();
             if (!injected.isEmpty()) {
-                // steps に差し込み
                 List<Step> newList = new ArrayList<>(s.steps);
-                newList.addAll(s.index, injected);
+
+                List<Integer> sortedIndices = injected.keySet().stream()
+                        .sorted(Comparator.reverseOrder())
+                        .toList();
+
+                for (int targetIdx : sortedIndices) {
+                    Step addstep = injected.get(targetIdx);
+                    if (addstep != null) {
+                        int safeIdx = Math.min(targetIdx + s.index, newList.size());
+                        newList.add(safeIdx, addstep);
+                        subList.add(safeIdx, false);
+                    }
+                }
+
                 s.steps = List.copyOf(newList);
 
-                // フラグ配列を steps 長に揃える（挿入ぶん false を同位置に挿入）
-                for (int n = 0; n < injected.size(); n++) {
-                    int insertAt = Math.min(s.index + n, subList.size());
-                    subList.add(insertAt, false);
-                }
-                // 念のため最終長も整える
+                // 最終的な整合性チェック
                 ensureFlagsSize(subList, s.steps.size());
                 SUBLIST.put(ctx.player().getUUID(), subList);
             }

@@ -5,14 +5,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Supplier;
 
 public final class MagicContext {
     private int rank;
+    private final MagicCast.Session session;
     private final ServerLevel level;
     @Nullable private final ServerPlayer player;
     private final DataBag data;
@@ -23,10 +21,10 @@ public final class MagicContext {
     private Supplier<MagicCast.Step> peekFrontSupplier;
     private Supplier<MagicCast.Step> peekMain;
     // ★ 追加：直後に差し込みたいStepのキュー
-    private final ArrayDeque<MagicCast.Step> enqueueNext = new ArrayDeque<>();
+    private final Map<Integer,MagicCast.Step> enqueueNext = new HashMap<>();
 
-    public MagicContext(ServerLevel level, @Nullable ServerPlayer player, DataBag data) {
-        this.level = level; this.player = player; this.data = data;
+    public MagicContext(ServerLevel level, @Nullable ServerPlayer player, DataBag data, MagicCast.Session session) {
+        this.level = level; this.player = player; this.data = data; this.session = session;
     }
 
     public ServerLevel level() { return level; }
@@ -59,12 +57,20 @@ public final class MagicContext {
     /** 今の直後に差し込みたいStepを申請（複数OK・順序維持） */
     public void enqueueNext(MagicCast.Step step) {
         if (step != null) {
-            this.enqueueNext.add(step);
+                enqueueNext.put(enqueueNext.size(),step);
         }
     }
-    /* package */ List<MagicCast.Step> _drainEnqueued() {
-        var out = new ArrayList<MagicCast.Step>(enqueueNext.size());
-        while (!enqueueNext.isEmpty()) out.add(enqueueNext.removeFirst());
+    public void enqueueIndex(int n,MagicCast.Step step) {
+        if (step != null) {
+            enqueueNext.put(n, step);
+        }
+    }
+    /* package */ Map<Integer, MagicCast.Step> _drainEnqueued() {
+        if (enqueueNext.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        var out = new HashMap<>(enqueueNext);
+        enqueueNext.clear();
         return out;
     }
     private int requestedDelayTicks = 0;
@@ -96,5 +102,9 @@ public final class MagicContext {
         boolean v = this.cancelRequested;
         this.cancelRequested = false;
         return v;
+    }
+
+    public int getSessionIndex() {
+        return session.index;
     }
 }

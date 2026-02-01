@@ -19,74 +19,84 @@ import org.apache.commons.lang3.tuple.Triple;
 public class MagicChantsAPI {
     public static Triple<List<MagicCast.Step>, List<Boolean>, List<String>>
     mergeAndAlignC(
-            List<WorldJsonStorage.MagicDef> a,
-            List<WorldJsonStorage.MagicDef> b) {
+            List<WorldJsonStorage.MagicDef> mainList, // A (メイン)
+            List<WorldJsonStorage.MagicDef> subList   // B (サブ、null区切り)
+    ) {
+        // 結果を格納するリスト
+        List<MagicCast.Step> outSteps = new ArrayList<>();
+        List<Boolean> outFlags = new ArrayList<>(); // false=Main, true=Sub
+        List<String> outTexts = new ArrayList<>();
 
-        System.out.println(a + ",and," + b);
+        // null ガード
+        if (mainList == null) mainList = Collections.emptyList();
+        if (subList == null) subList = Collections.emptyList();
 
-        // sa の構築 (null チェックを追加)
-        List<MagicCast.Step> sa = new ArrayList<>();
-        if (a != null) { // ★ 1. リスト a が null でないかチェック
-            for (WorldJsonStorage.MagicDef def : a) {
-                if (def != null) { // ★ 2. リストの中身 def が null でないかチェック
-                    List<MagicCast.Step> steps = def.steps();
-                    if (steps != null) { // ★ 3. def.steps() が null を返さないかチェック
-                        sa.addAll(steps);
-                    }
+        int subIndex = 0; // サブ側の読み取り位置カーソル
+
+        // メインの魔法を1つずつ処理する
+        for (WorldJsonStorage.MagicDef mainDef : mainList) {
+
+            // -------------------------------------------------
+            // 1. 先にサブ効果 (B) をすべて回収して追加する
+            // -------------------------------------------------
+            while (subIndex < subList.size()) {
+                WorldJsonStorage.MagicDef subDef = subList.get(subIndex);
+                subIndex++; // カーソルを進める
+
+                if (subDef == null) {
+                    // null は「このメイン魔法に対するサブ効果の終わり」を意味する
+                    break;
                 }
+
+                // サブ効果を展開して登録 (Flag = true)
+                addDefToResult(subDef, true, outSteps, outFlags, outTexts);
+            }
+
+            // -------------------------------------------------
+            // 2. その後にメイン効果 (A) を追加する
+            // -------------------------------------------------
+            if (mainDef != null) {
+                // メイン効果を展開して登録 (Flag = false)
+                addDefToResult(mainDef, false, outSteps, outFlags, outTexts);
             }
         }
-        System.out.println(sa);
 
-        // sb の構築 (null チェックを追加)
-        List<MagicCast.Step> sb = new ArrayList<>();
-        if (b != null) { // ★ 1. リスト b が null でないかチェック
-            for (WorldJsonStorage.MagicDef def : b) {
-                if (def != null) { // ★ 2. リストの中身 def が null でないかチェック
-                    List<MagicCast.Step> steps = def.steps();
-                    if (steps != null) { // ★ 3. def.steps() が null を返さないかチェック
-                        sb.addAll(steps);
-                    }
-                }
+        // デバッグ出力
+        System.out.println("Merged Steps: " + outSteps.size());
+        System.out.println("Merged Flags: " + outFlags);
+
+        return Triple.of(outSteps, outFlags, outTexts);
+    }
+
+    /**
+     * MagicDef から Step, Flag, Text を抽出してリストに追加するヘルパーメソッド
+     * これにより Step と Text のズレを防止します。
+     */
+    private static void addDefToResult(
+            WorldJsonStorage.MagicDef def,
+            boolean isSub,
+            List<MagicCast.Step> stepsDest,
+            List<Boolean> flagsDest,
+            List<String> textsDest
+    ) {
+        if (def == null || def.steps() == null) return;
+
+        Map<ResourceLocation, String> textMap = def.textById(); // Stepに対応するテキスト辞書
+
+        for (MagicCast.Step step : def.steps()) {
+            // 1. Step 追加
+            stepsDest.add(step);
+
+            // 2. Flag 追加 (Mainならfalse, Subならtrue)
+            flagsDest.add(isSub);
+
+            // 3. Text 追加 (辞書から検索、なければ空文字やデフォルト)
+            String chantText = "";
+            if (textMap != null) {
+                chantText = textMap.get(step.id());
             }
+            textsDest.add(chantText);
         }
-        System.out.println(sb);
-
-        var merged = mergeWithUnknownMarkersAndFlags(sa, sb);
-
-        List<MagicCast.Step> outSteps = merged.getLeft();     // ← 最終順序
-        List<Boolean> flags = merged.getRight();
-
-        // sta の構築 (null チェックを追加)
-        List<Map<ResourceLocation, String>> sta = new ArrayList<>();
-        if (a != null) { // ★ 1. リスト a が null でないかチェック
-            for (WorldJsonStorage.MagicDef def : a) {
-                if (def != null) { // ★ 2. リストの中身 def が null でないかチェック
-                    // def.textById() が null を返しても List への add(null) は合法
-                    sta.add(def.textById());
-                }
-            }
-        }
-        System.out.println(sta);
-
-        // stb の構築 (null チェックを追加)
-        List<Map<ResourceLocation, String>> stb = new ArrayList<>();
-        if (b != null) { // ★ 1. リスト b が null でないかチェック
-            for (WorldJsonStorage.MagicDef def : b) {
-                if (def != null) { // ★ 2. リストの中身 def が null でないかチェック
-                    stb.add(def.textById());
-                }
-            }
-        }
-        System.out.println(stb);
-
-        List<String> outC = alignTextsById(outSteps, flags, sta, stb);
-
-        System.out.println(outSteps);
-        System.out.println(flags);
-        System.out.println(outC);
-
-        return Triple.of(outSteps, flags, outC);
     }
 
 
@@ -118,58 +128,6 @@ public class MagicChantsAPI {
         return Pair.of(out, flags);
     }
 
-    public static List<String> alignTextsById(
-            List<MagicCast.Step> merged,
-            List<Boolean> flags,
-            List<Map<ResourceLocation, String>> textAList,
-            List<Map<ResourceLocation, String>> textBList) {
-
-        if (merged == null || flags == null) {
-            return java.util.Collections.emptyList();
-        }
-        Map<ResourceLocation, String> flatA = new java.util.HashMap<>();
-        if (textAList != null) {
-            for (Map<ResourceLocation, String> m : textAList) {
-                if (m == null) continue; // ★ Map 自体の null チェック
-                for (Map.Entry<ResourceLocation, String> entry : m.entrySet()) {
-                    if (entry.getKey() != null) {
-                        flatA.putIfAbsent(entry.getKey(), entry.getValue());
-                    }
-                }
-            }
-        }
-        Map<ResourceLocation, String> flatB = new java.util.HashMap<>();
-        if (textBList != null) {
-            for (Map<ResourceLocation, String> m : textBList) {
-                if (m == null) continue; // ★ Map 自体の null チェック
-                for (Map.Entry<ResourceLocation, String> entry : m.entrySet()) {
-                    if (entry.getKey() != null) {
-                        flatB.putIfAbsent(entry.getKey(), entry.getValue());
-                    }
-                }
-            }
-        }
-        List<String> out = new ArrayList<>(merged.size());
-        for (int i = 0; i < merged.size(); i++) {
-            MagicCast.Step st = merged.get(i);
-            if (st == null || st.id() == null) { // ★ Step と id の null チェック
-                out.add(null);
-                continue;
-            }
-            ResourceLocation id = st.id();
-            boolean fromB = flags.get(i);
-            String hit;
-            if (fromB) {
-                hit = flatB.get(id);
-                if (hit == null) hit = flatA.get(id);
-            } else {
-                hit = flatA.get(id);
-                if (hit == null) hit = flatB.get(id);
-            }
-            out.add(hit);
-        }
-        return out;
-    }
     public static void pullEntityTowards(Entity target, Vec3 center, double strength) {
         if (target == null || center == null) return;
 

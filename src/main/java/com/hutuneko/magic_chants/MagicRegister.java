@@ -109,6 +109,11 @@ public class MagicRegister {
                 Magic_chants.rl("magic_summon"),
                 Magic_Summon.class
         );
+        MagicClassRegistry.registerMagic(
+                Magic_chants.rl("magic_and"),
+                Magic_And.class
+        );
+
 //        MagicClassRegistry.registerMagic(
 //                Magic_chants.rl("magic_suction"),
 //                Magic_Suction.class
