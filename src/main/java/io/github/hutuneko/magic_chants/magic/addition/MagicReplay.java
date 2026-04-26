@@ -1,4 +1,4 @@
-package io.magic_chants.magic.addition;
+package io.github.hutuneko.magic_chants.magic.addition;
 
 import io.github.hutuneko.magic_chants.api.magic.Magic;
 import io.github.hutuneko.magic_chants.api.magic.MagicCast;

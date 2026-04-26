@@ -1,4 +1,4 @@
-package io.magic_chants.magic.action;
+package io.github.hutuneko.magic_chants.magic.action;
 
 import io.github.hutuneko.magic_chants.ModRegistry;
 import io.github.hutuneko.magic_chants.api.magic.Keys;
@@ -15,7 +15,7 @@ public class MagicInsRespawn extends Magic {
             if (p != null) {
                 power = p.intValue();
             }
-            ctx.player().addEffect(new MobEffectInstance(ModRegistry.INSRESPAWN.get(),power * 200));
+            ctx.player().addEffect(new MobEffectInstance(ModRegistry.INSRESPAWN,power * 200));
         }
     }
 }

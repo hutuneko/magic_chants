@@ -1,10 +1,10 @@
-package io.magic_chants.api.file;
+package io.github.hutuneko.magic_chants.api.file;
 
 import com.google.gson.*;
 import io.github.hutuneko.magic_chants.MagicChants;
 import io.github.hutuneko.magic_chants.api.magic.MagicCast;
 import net.minecraft.nbt.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.storage.LevelResource;
@@ -116,7 +116,7 @@ public class WorldJsonStorage {
     /** アイテムUUIDごとのキャッシュ（完全一致とトリガー） */
     private static final Map<UUID, Map<String, List<MagicCast.Step>>> ITEM_EXACT = new HashMap<>();
     private static final Map<UUID, List<TriggerEntry>> ITEM_TRIGGERS = new HashMap<>();
-    private static final Map<UUID, Map<String, Map<ResourceLocation, String>>> ITEM_EXACT_TEXTS = new HashMap<>();
+    private static final Map<UUID, Map<String, Map<Identifier, String>>> ITEM_EXACT_TEXTS = new HashMap<>();
 
     /**
      * UUID の定義を再読み込みしてキャッシュへ構築します。
@@ -192,43 +192,43 @@ public class WorldJsonStorage {
                 " : exact=" + nextExact.size() + ", triggers=" + nextTriggers.size());
     }
 
-    /** 完全一致（UUID版） */
-    public static List<MagicCast.Step> matchExactItem(ServerLevel level, UUID uuid, String chant) {
-        if (chant == null) return List.of();
-        var exact = ITEM_EXACT.getOrDefault(uuid, Map.of());
-        var v = exact.get(chant.trim());
-        return v != null ? v : List.of();
-    }
-
-    public static List<MagicCast.Step> matchSmartItem(ServerLevel level, UUID uuid, String raw) {
-        if (raw == null) return List.of();
-        String s = raw.trim();
-        reloadItemMagics(level, uuid);
-
-        var exact = ITEM_EXACT.getOrDefault(uuid, Map.of());
-        var v = exact.get(s);
-        System.out.println(v);
-        if (v != null) return v;
-        List<MagicCast.Step> list = new ArrayList<>();
-
-        var triggers = ITEM_TRIGGERS.getOrDefault(uuid, List.of());
-        for (TriggerEntry te : triggers) {
-            System.out.println(te);
-            var bag = te.match(s);
-            System.out.println(bag);
-            if (bag != null) {
-                return te.buildSteps(bag);
-            }
-        }
-        list.add(new MagicCast.Step(MagicChants.rl("magic_set")));
-        return list;
-    }
-    private record StepDef(ResourceLocation id, CompoundTag args, @Nullable Map<String, String> argsFrom) {}
+//    /** 完全一致（UUID版） */
+//    public static List<MagicCast.Step> matchExactItem(ServerLevel level, UUID uuid, String chant) {
+//        if (chant == null) return List.of();
+//        var exact = ITEM_EXACT.getOrDefault(uuid, Map.of());
+//        var v = exact.get(chant.trim());
+//        return v != null ? v : List.of();
+//    }
+//
+//    public static List<MagicCast.Step> matchSmartItem(ServerLevel level, UUID uuid, String raw) {
+//        if (raw == null) return List.of();
+//        String s = raw.trim();
+//        reloadItemMagics(level, uuid);
+//
+//        var exact = ITEM_EXACT.getOrDefault(uuid, Map.of());
+//        var v = exact.get(s);
+//        System.out.println(v);
+//        if (v != null) return v;
+//        List<MagicCast.Step> list = new ArrayList<>();
+//
+//        var triggers = ITEM_TRIGGERS.getOrDefault(uuid, List.of());
+//        for (TriggerEntry te : triggers) {
+//            System.out.println(te);
+//            var bag = te.match(s);
+//            System.out.println(bag);
+//            if (bag != null) {
+//                return te.buildSteps(bag);
+//            }
+//        }
+//        list.add(MagicCast.Step.main(MagicChants.rl("magic_set"),));
+//        return list;
+//    }
+    private record StepDef(Identifier id, CompoundTag args, @Nullable Map<String, String> argsFrom) {}
     // 3) Step＋Text（id→文）を一緒に返すレコード
     public static class MagicDef {
         private final boolean empty;
         private List<MagicCast.Step> steps;
-        private final Map<ResourceLocation, String> textById;
+        private final Map<Identifier, String> textById;
 
         public MagicDef(){
             this.steps = new ArrayList<>();
@@ -236,7 +236,7 @@ public class WorldJsonStorage {
             this.textById = new HashMap<>();
         }
 
-        public MagicDef(List<MagicCast.Step> steps, Map<ResourceLocation, String> textById){
+        public MagicDef(List<MagicCast.Step> steps, Map<Identifier, String> textById){
             this.steps = (steps != null) ? new ArrayList<>(steps) : new ArrayList<>();
             this.textById = (textById != null) ? new HashMap<>(textById) : new HashMap<>();
             this.empty = this.steps.isEmpty();
@@ -248,7 +248,7 @@ public class WorldJsonStorage {
             return List.copyOf(steps);
         }
 
-        public Map<ResourceLocation, String> textById() {
+        public Map<Identifier, String> textById() {
             return Map.copyOf(textById);
         }
 
@@ -300,7 +300,7 @@ public class WorldJsonStorage {
      * @param textBuilder ★追加: 文ビルダー（任意）。nullならデフォルト解決にフォールバック
      */
         private record TriggerEntry(List<OneTrigger> triggers, List<StepDef> steps,
-                                    @Nullable BiFunction<List<StepDef>, Map<String, String>, Map<ResourceLocation, String>> textBuilder) {
+                                    @Nullable BiFunction<List<StepDef>, Map<String, String>, Map<Identifier, String>> textBuilder) {
             TriggerEntry(List<OneTrigger> triggers, List<StepDef> steps) {
                 this(triggers, steps, null);
             }
@@ -328,14 +328,14 @@ public class WorldJsonStorage {
             /**
              * ★追加：このトリガーが作る Step の ID に紐づく文（置換済み）を返す
              */
-            Map<ResourceLocation, String> buildTextById(@Nullable Map<String, String> captured) {
+            Map<Identifier, String> buildTextById(@Nullable Map<String, String> captured) {
                 if (textBuilder != null) {
                     return textBuilder.apply(steps, captured);
                 }
                 // デフォルト実装：StepDef から ID を取り、テンプレート解決器で文にする
-                Map<ResourceLocation, String> out = new LinkedHashMap<>();
+                Map<Identifier, String> out = new LinkedHashMap<>();
                 for (StepDef sd : steps) {
-                    ResourceLocation id = sd.id();              // ← StepDef から ID を取得できる前提
+                    Identifier id = sd.id();              // ← StepDef から ID を取得できる前提
                     String text = TextTemplates.resolve(id, captured); // ← 下のヘルパー
                     out.put(id, text);
                 }
@@ -343,11 +343,11 @@ public class WorldJsonStorage {
             }
         }
     static final class TextTemplates {
-        private static final Map<ResourceLocation,String> TEMPLATES = new HashMap<>();
+        private static final Map<Identifier,String> TEMPLATES = new HashMap<>();
 
-        static void put(ResourceLocation id, String tmpl) { TEMPLATES.put(id, tmpl); }
+        static void put(Identifier id, String tmpl) { TEMPLATES.put(id, tmpl); }
 
-        static String resolve(ResourceLocation id, @Nullable Map<String,String> cap) {
+        static String resolve(Identifier id, @Nullable Map<String,String> cap) {
             String tmpl = TEMPLATES.getOrDefault(id, id.toString() + "*");
             if (cap == null || cap.isEmpty()) return tmpl;
             String out = tmpl;
@@ -446,7 +446,7 @@ public class WorldJsonStorage {
             JsonObject so = se.getAsJsonObject();
             if (!so.has("id")) continue;
 
-            ResourceLocation id = new ResourceLocation(so.get("id").getAsString());
+            Identifier id = Identifier.parse(so.get("id").getAsString());
             CompoundTag args = (so.has("args") && so.get("args").isJsonObject())
                     ? jsonToNbt(so.getAsJsonObject("args"))
                     : new CompoundTag();
@@ -503,7 +503,7 @@ public class WorldJsonStorage {
                     }
                 }
             }
-            out.add(new MagicCast.Step(d.id));
+            out.add(new MagicCast.Step(d.id,args, MagicCast.ChantSource.MAIN));
         }
         return out;
     }
@@ -596,7 +596,7 @@ public class WorldJsonStorage {
     }
     // WorldJsonStorage に追加
     public static @Nullable JsonElement loadDataJson(MinecraftServer server, String namespace, String path) {
-        ResourceLocation loc = new ResourceLocation(namespace, path); // e.g. magic_chants:magics/magic.json
+        Identifier loc = Identifier.fromNamespaceAndPath(namespace, path); // e.g. magic_chants:magics/magic.json
         try {
             var opt = server.getResourceManager().getResource(loc); // Optional<Resource>
             if (opt.isEmpty()) return null;

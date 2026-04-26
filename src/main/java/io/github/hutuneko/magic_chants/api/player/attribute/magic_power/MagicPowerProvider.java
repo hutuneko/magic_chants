@@ -1,38 +1,18 @@
-package io.magic_chants.api.player.attribute.magic_power;
+package io.github.hutuneko.magic_chants.api.player.attribute.magic_power;
 
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.capabilities.CapabilityToken;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.INBTSerializable;
-import net.minecraftforge.common.util.LazyOptional;
+import io.github.hutuneko.magic_chants.MagicChants;
+import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
-public class MagicPowerProvider implements ICapabilityProvider, INBTSerializable<CompoundTag> {
+import java.util.function.Supplier;
 
-    public static Capability<IMagicPower> MAGIC_POWER = CapabilityManager.get(new CapabilityToken<>(){});
+public class MagicPowerProvider {
+    public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES =
+            DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, MagicChants.MODID);
 
-    private final IMagicPower instance = new MagicPower();
-    private final LazyOptional<IMagicPower> optional = LazyOptional.of(() -> instance);
-
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-        return cap == MAGIC_POWER ? optional.cast() : LazyOptional.empty();
-    }
-
-    @Override
-    public CompoundTag serializeNBT() {
-        CompoundTag tag = new CompoundTag();
-        tag.putDouble("mp", instance.getMP());
-        tag.putDouble("maxMP", instance.getMaxMP());
-        return tag;
-    }
-
-    @Override
-    public void deserializeNBT(CompoundTag nbt) {
-        instance.setMP(nbt.getDouble("mp"));
-        instance.setMaxMP(nbt.getDouble("maxMP"));
-    }
+    public static final Supplier<AttachmentType<MagicPower>> MAGIC_POWER =
+            ATTACHMENT_TYPES.register("magic_power", () -> AttachmentType.serializable(MagicPower::new)
+                    .copyOnDeath()
+                    .build());
 }
-

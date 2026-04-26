@@ -1,4 +1,4 @@
-package io.magic_chants.magic.action;
+package io.github.hutuneko.magic_chants.magic.action;
 
 import io.github.hutuneko.magic_chants.api.magic.Keys;
 import io.github.hutuneko.magic_chants.api.magic.Magic;
@@ -18,7 +18,7 @@ public class MagicKill extends Magic {
         var entity = level.getEntity(id);
         if (entity == null) return;
         if (entity instanceof LivingEntity living) {
-            living.kill();
+            living.kill(level);
         }
     }
 }

@@ -1,4 +1,4 @@
-package io.magic_chants.item;
+package io.github.hutuneko.magic_chants.item;
 
 import io.github.hutuneko.magic_chants.api.chat.MagicChatHook;
 import io.github.hutuneko.magic_chants.api.chat.MagicChatServer;
@@ -10,13 +10,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -27,9 +29,10 @@ public class MagicWandItem extends Item {
 
     // --- クラフト時 ---
     @Override
-    public void onCraftedBy(@NotNull ItemStack stack, @NotNull Level level, @NotNull Player player) {
-        super.onCraftedBy(stack, level, player);
-        if (!level.isClientSide) {
+    public void onCraftedBy(@NotNull ItemStack stack, @NotNull Player player) {
+        Level level  = player.level();
+        super.onCraftedBy(stack, player);
+        if (!level.isClientSide()) {
             ChantItemUtil.ensureUuid(stack, (ServerLevel) level);
         }
         player.getInventory().setChanged();
@@ -38,17 +41,16 @@ public class MagicWandItem extends Item {
 
     // --- Tick更新時（loot・command・pickupなど） ---
     @Override
-    public void inventoryTick(@NotNull ItemStack stack, @NotNull Level level,
-                              @NotNull Entity entity, int slot, boolean selected) {
-        super.inventoryTick(stack, level, entity, slot, selected);
-        if (!level.isClientSide && entity instanceof Player) {
-            ChantItemUtil.ensureUuid(stack, (ServerLevel) level);
+    public void inventoryTick(ItemStack itemStack, ServerLevel level, Entity owner, @Nullable EquipmentSlot slot) {
+        super.inventoryTick(itemStack, level, owner, slot);
+        if (!level.isClientSide() && owner instanceof Player) {
+            ChantItemUtil.ensureUuid(itemStack, level);
         }
     }
 
     // --- 右クリック動作 ---
     @Override
-    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
+    public @NotNull InteractionResult use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         UUID uuid;
 
@@ -81,6 +83,6 @@ public class MagicWandItem extends Item {
             }
         }
 
-        return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
+        return InteractionResult.SUCCESS;
     }
 }

@@ -1,4 +1,4 @@
-package io.magic_chants.item;
+package io.github.hutuneko.magic_chants.item;
 
 import net.minecraft.world.item.Item;
 

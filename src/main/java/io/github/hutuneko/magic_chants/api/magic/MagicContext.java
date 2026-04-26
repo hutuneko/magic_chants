@@ -1,4 +1,4 @@
-package io.magic_chants.api.magic;
+package io.github.hutuneko.magic_chants.api.magic;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;

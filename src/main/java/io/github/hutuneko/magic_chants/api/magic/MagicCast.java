@@ -1,15 +1,15 @@
-package io.magic_chants.api.magic;
+package io.github.hutuneko.magic_chants.api.magic;
 
 import io.github.hutuneko.magic_chants.MagicChants;
 import io.github.hutuneko.magic_chants.api.chat.ChantScorer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -17,23 +17,23 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class MagicCast {
     public record Step(
-            ResourceLocation id,
+            Identifier id,
             CompoundTag args,
             ChantSource source
     ) {
         // --- ファクトリメソッド（明示的にsource指定）---
-        public static Step main(ResourceLocation id) {
+        public static Step main(Identifier id) {
             return new Step(id, new CompoundTag(), ChantSource.MAIN);
         }
 
-        public static Step main(ResourceLocation id, CompoundTag args) {
+        public static Step main(Identifier id, CompoundTag args) {
             return new Step(id, args, ChantSource.MAIN);
         }
 
-        public static Step sub(ResourceLocation id) {
+        public static Step sub(Identifier id) {
             return new Step(id, new CompoundTag(), ChantSource.SUB);
         }
-        public static Step sub(ResourceLocation id, CompoundTag args) {
+        public static Step sub(Identifier id, CompoundTag args) {
             return new Step(id, args, ChantSource.SUB);
         }
 
@@ -48,6 +48,9 @@ public final class MagicCast {
 
         public Step withSource(ChantSource newSource) {
             return new Step(id, args, newSource);
+        }
+        public Step copy() {
+            return new Step(id, args, source);
         }
     }
     public enum ChantSource { MAIN, SUB }
@@ -170,7 +173,7 @@ public final class MagicCast {
 
                 // 1. WAIT判定
                 if (isWait(step)) {
-                    s.waitToken = step.args().getString("_wait_token");
+                    s.waitToken = step.args().getString("_wait_token").orElse("");
                     return; // 中断
                 }
 
@@ -235,7 +238,7 @@ public final class MagicCast {
                 && step.args().contains("_wait_token");
     }
 
-    private static final ResourceLocation WAIT_ID = MagicChants.rl("_wait");
+    private static final Identifier WAIT_ID = MagicChants.rl("_wait");
     private static CompoundTag safeArgs(@Nullable CompoundTag t) { return t != null ? t : new CompoundTag(); }
 
     /* ===== サーバーtick監視（タイムアウト自動掃除） ===== */
@@ -245,13 +248,12 @@ public final class MagicCast {
     private static void ensureTicker() {
         if (TICKER_INSTALLED) return;
         TICKER_INSTALLED = true;
-        MinecraftForge.EVENT_BUS.register(new ServerTicker());
+        NeoForge.EVENT_BUS.register(new ServerTicker());
     }
 
     public static final class ServerTicker {
         @SubscribeEvent
-        public void onServerTick(TickEvent.ServerTickEvent e) {
-            if (e.phase != TickEvent.Phase.END) return;
+        public void onServerTick(ServerTickEvent.Post e) {
             long now = e.getServer().getTickCount();
 
             // タイムアウト掃除

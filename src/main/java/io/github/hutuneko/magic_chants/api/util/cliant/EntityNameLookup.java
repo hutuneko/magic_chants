@@ -1,4 +1,4 @@
-package io.magic_chants.api.util.cliant;
+package io.github.hutuneko.magic_chants.api.util.cliant;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -20,7 +20,7 @@ public class EntityNameLookup {
 
         BuiltInRegistries.ENTITY_TYPE.entrySet().forEach(entry -> {
             EntityType<?> type = entry.getValue();
-            String registryName = entry.getKey().location().toString();
+            String registryName = entry.getKey().identifier().toString();
 
             // 現在の言語設定での表示名を取得
             String displayName = Component.translatable(type.getDescriptionId()).getString();

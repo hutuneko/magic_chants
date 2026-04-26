@@ -1,4 +1,4 @@
-package io.magic_chants.api.chat;
+package io.github.hutuneko.magic_chants.api.chat;
 
 import io.github.hutuneko.magic_chants.api.file.WorldJsonStorage;
 import io.github.hutuneko.magic_chants.api.magic.MagicCast;
@@ -10,14 +10,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.event.ServerChatEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.ServerChatEvent;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 public final class MagicChatServer {
 
     private static final Map<UUID, List<WorldJsonStorage.MagicDef>> DEF = new ConcurrentHashMap<>();
@@ -55,7 +55,7 @@ public final class MagicChatServer {
         }
         e.setCanceled(true);
 
-        var level = sp.serverLevel();
+        var level = sp.level();
 
         var ctx = CURRENT_SESSIONS.get(sp.getUUID());
         UUID itemUuid = (ctx != null) ? ctx.itemUuid() : null;
@@ -104,7 +104,7 @@ public final class MagicChatServer {
         String chantRaw = (lines == null || lines.isEmpty()) ? "" : String.join(" ", lines).trim();
         // --- 近距離チャット送信 ---
         double radius = 32.0; // 聞こえる範囲（ブロック単位）
-        var level = p.serverLevel();
+        var level = p.level();
         String[] words = chantRaw.split(" ");
         StringBuilder currentLine = new StringBuilder();
         int currentLineLength = 0;

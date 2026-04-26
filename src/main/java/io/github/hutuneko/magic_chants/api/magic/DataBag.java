@@ -1,11 +1,11 @@
-package io.magic_chants.api.magic;
+package io.github.hutuneko.magic_chants.api.magic;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public final class DataBag {
-    private final Map<ResourceLocation, Entry<?>> map = new HashMap<>();
+    private final Map<Identifier, Entry<?>> map = new HashMap<>();
 
     private record Entry<T>(DataKey<T> key, T value) {}
 
@@ -63,11 +63,11 @@ public final class DataBag {
 
 
     // NBT読込：外から提供される "キー定義表" が必要（id→DataKey）
-    public static DataBag loadFromNbt(ListTag list, Function<ResourceLocation, DataKey<?>> keyResolver) {
+    public static DataBag loadFromNbt(ListTag list, Function<Identifier, DataKey<?>> keyResolver) {
         DataBag bag = new DataBag();
         for (Tag t : list) {
             if (!(t instanceof CompoundTag ct)) continue;
-            ResourceLocation id = new ResourceLocation(ct.getString("id"));
+            Identifier id = Identifier.parse(ct.getString("id").orElse(""));
             DataKey<?> key = keyResolver.apply(id);
             if (key == null) continue; // 未知キーはスキップ
             Tag data = ct.get("data");

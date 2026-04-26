@@ -11,16 +11,16 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record C2S_CommitMagicPacket(String itemUuid, ItemStack itemStack) implements CustomPacketPayload {
+public record C2SCommitMagicPacket(String itemUuid, ItemStack itemStack) implements CustomPacketPayload {
 
-    public static final Type<C2S_CommitMagicPacket> TYPE = new Type<>(
+    public static final Type<C2SCommitMagicPacket> TYPE = new Type<>(
             Identifier.fromNamespaceAndPath(MagicChants.MODID, "commit_magic")
     );
 
-    public static final StreamCodec<FriendlyByteBuf, C2S_CommitMagicPacket> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.STRING_UTF8, C2S_CommitMagicPacket::itemUuid,
-            ByteBufCodecs.fromCodec(ItemStack.CODEC), C2S_CommitMagicPacket::itemStack,
-            C2S_CommitMagicPacket::new
+    public static final StreamCodec<FriendlyByteBuf, C2SCommitMagicPacket> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8, C2SCommitMagicPacket::itemUuid,
+            ByteBufCodecs.fromCodec(ItemStack.CODEC), C2SCommitMagicPacket::itemStack,
+            C2SCommitMagicPacket::new
     );
 
     @Override

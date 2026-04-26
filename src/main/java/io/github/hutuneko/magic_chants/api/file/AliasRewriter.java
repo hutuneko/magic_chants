@@ -1,5 +1,5 @@
 // AliasRewriter.java
-package io.magic_chants.api.file;
+package io.github.hutuneko.magic_chants.api.file;
 
 import com.google.gson.*;
 import java.util.*;

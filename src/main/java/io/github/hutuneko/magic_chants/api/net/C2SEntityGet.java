@@ -10,15 +10,15 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public record C2S_EntityGet(String registryName) implements CustomPacketPayload {
+public record C2SEntityGet(String registryName) implements CustomPacketPayload {
 
-    public static final Type<C2S_EntityGet> TYPE = new Type<>(
+    public static final Type<C2SEntityGet> TYPE = new Type<>(
             Identifier.fromNamespaceAndPath(MagicChants.MODID, "entity_get")
     );
 
-    public static final StreamCodec<FriendlyByteBuf, C2S_EntityGet> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.STRING_UTF8, C2S_EntityGet::registryName,
-            C2S_EntityGet::new
+    public static final StreamCodec<FriendlyByteBuf, C2SEntityGet> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8, C2SEntityGet::registryName,
+            C2SEntityGet::new
     );
 
     @Override
@@ -26,11 +26,11 @@ public record C2S_EntityGet(String registryName) implements CustomPacketPayload 
         return TYPE;
     }
 
-    public static void handle(IPayloadContext context) {
+    public static void handle(C2SEntityGet msg,IPayloadContext context) {
         context.enqueueWork(() -> {
             ServerPlayer player = context.player() instanceof ServerPlayer s ? s : null;
             if (player == null) return;
-            MagicSummon.spawnEntity(player, registryName);
+            MagicSummon.spawnEntity(player, msg.registryName);
         });
     }
 }

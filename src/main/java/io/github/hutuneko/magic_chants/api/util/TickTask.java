@@ -1,4 +1,4 @@
-package io.magic_chants.api.util;
+package io.github.hutuneko.magic_chants.api.util;
 
 import java.util.function.Supplier;
 

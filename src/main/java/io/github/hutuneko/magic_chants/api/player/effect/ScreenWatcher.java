@@ -1,18 +1,19 @@
-package io.magic_chants.api.player.effect;
+package io.github.hutuneko.magic_chants.api.player.effect;
 
 import io.github.hutuneko.magic_chants.MagicChants;
 import io.github.hutuneko.magic_chants.ModRegistry;
-import io.github.hutuneko.magic_chants.api.net.MagicNetwork;
 import io.github.hutuneko.magic_chants.api.player.effect.net.InstantRespawnPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.DeathScreen;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.network.chat.Component;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.ScreenEvent;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT)
+@EventBusSubscriber(value = Dist.CLIENT)
 public class ScreenWatcher {
 
     // ScreenWatcher.java
@@ -20,9 +21,9 @@ public class ScreenWatcher {
 
     @SubscribeEvent
     public static void onScreenOpen(ScreenEvent.Opening event) {
-        if (Minecraft.getInstance().player != null && event.getNewScreen() instanceof DeathScreen && Minecraft.getInstance().player.hasEffect(ModRegistry.INSRESPAWN.get())) {
+        if (Minecraft.getInstance().player != null && event.getNewScreen() instanceof DeathScreen && Minecraft.getInstance().player.hasEffect(ModRegistry.INSRESPAWN)) {
 
-            MagicNetwork.CHANNEL.sendToServer(new InstantRespawnPacket());
+            ClientPacketDistributor.sendToServer(new InstantRespawnPacket());
 
             // 処理を即座に実行する代わりに、遅延フラグを立てる
             deferredRespawnTicks = 1;
@@ -32,8 +33,8 @@ public class ScreenWatcher {
 
     // クライアントティックイベントのハンドラを追加
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && deferredRespawnTicks > 0) {
+    public static void onClientTick(ClientTickEvent.Pre event) {
+        if (deferredRespawnTicks > 0) {
             deferredRespawnTicks--;
 
             if (deferredRespawnTicks == 0) {
@@ -45,7 +46,7 @@ public class ScreenWatcher {
                         mc.setScreen(null);
                     } catch (Throwable t) {
                         // 予期せぬエラー（LinkageErrorなど）をキャッチし、ゲームをクラッシュさせずにログに出力
-                        mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("§c[Magic Chants] Respawn logic failed defensively. Check log."));
+                        mc.gui.getChat().addClientSystemMessage(Component.literal("§c[Magic Chants] Respawn logic failed defensively. Check log."));
                         MagicChants.LOGGER.error("Defensive respawn failed", t);
                     }
                 }

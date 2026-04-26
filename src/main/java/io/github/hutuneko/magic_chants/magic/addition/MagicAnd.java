@@ -1,9 +1,8 @@
-package io.magic_chants.magic.addition;
+package io.github.hutuneko.magic_chants.magic.addition;
 
 import io.github.hutuneko.magic_chants.api.magic.Magic;
 import io.github.hutuneko.magic_chants.api.magic.MagicCast;
 import io.github.hutuneko.magic_chants.api.magic.MagicContext;
-import io.github.hutuneko.magic_chants.api.magic.SubWithMagic;
 
 public class MagicAnd extends Magic {
 

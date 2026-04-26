@@ -12,15 +12,15 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.Objects;
 
-public record S2C_EntityGet(String registryName) implements CustomPacketPayload {
+public record S2CEntityGet(String registryName) implements CustomPacketPayload {
 
-    public static final Type<S2C_EntityGet> TYPE = new Type<>(
+    public static final Type<S2CEntityGet> TYPE = new Type<>(
             Identifier.fromNamespaceAndPath(MagicChants.MODID, "s2c_entity_get")
     );
 
-    public static final StreamCodec<FriendlyByteBuf, S2C_EntityGet> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.STRING_UTF8, S2C_EntityGet::registryName,
-            S2C_EntityGet::new
+    public static final StreamCodec<FriendlyByteBuf, S2CEntityGet> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8, S2CEntityGet::registryName,
+            S2CEntityGet::new
     );
 
     @Override
@@ -28,11 +28,11 @@ public record S2C_EntityGet(String registryName) implements CustomPacketPayload 
         return TYPE;
     }
 
-    public static void handle(IPayloadContext context) {
+    public static void handle(S2CEntityGet msg,IPayloadContext context) {
         context.enqueueWork(() -> {
-            String resolved = EntityNameLookup.getRegistryName(registryName);
-            ClientPacketDistributor.sendToServer(new C2S_EntityGet(
-                    Objects.requireNonNullElse(resolved, registryName)
+            String resolved = EntityNameLookup.getRegistryName(msg.registryName);
+            ClientPacketDistributor.sendToServer(new C2SEntityGet(
+                    Objects.requireNonNullElse(resolved, msg.registryName)
             ));
         });
     }

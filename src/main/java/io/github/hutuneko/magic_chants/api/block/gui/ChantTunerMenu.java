@@ -1,14 +1,8 @@
 
-package io.magic_chants.api.block.gui;
+package io.github.hutuneko.magic_chants.api.block.gui;
 
 import io.github.hutuneko.magic_chants.ModRegistry;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.items.SlotItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.IItemHandler;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.Level;
@@ -21,6 +15,12 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.SlotItemHandler;
 
 import java.util.function.Supplier;
 import java.util.Map;
@@ -61,7 +61,7 @@ public class ChantTunerMenu extends AbstractContainerMenu implements Supplier<Ma
         this.customSlots.put(0, this.addSlot(new SlotItemHandler(internal, 0, 295, 86)));
 
         // ★ ここが最も重要な修正: クライアント側でのみ setupClientOnlySlotLogic を呼び出す
-        if (FMLEnvironment.dist == Dist.CLIENT) { // ★ 環境チェックを追加
+        if (FMLEnvironment.getDist() == Dist.CLIENT) { // ★ 環境チェックを追加
             setupClientOnlySlotLogic();
         }
 
@@ -170,7 +170,7 @@ public class ChantTunerMenu extends AbstractContainerMenu implements Supplier<Ma
                 }
                 Slot slot = this.slots.get(i);
                 ItemStack itemstack = slot.getItem();
-                if (slot.mayPlace(itemstack) && !itemstack.isEmpty() && ItemStack.isSameItemSameTags(p_38904_, itemstack)) {
+                if (slot.mayPlace(itemstack) && !itemstack.isEmpty() && ItemStack.isSameItem(p_38904_, itemstack)) {
                     int j = itemstack.getCount() + p_38904_.getCount();
                     int maxSize = Math.min(slot.getMaxStackSize(), p_38904_.getMaxStackSize());
                     if (j <= maxSize) {

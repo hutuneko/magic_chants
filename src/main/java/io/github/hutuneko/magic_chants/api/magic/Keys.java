@@ -1,4 +1,4 @@
-package io.magic_chants.api.magic;
+package io.github.hutuneko.magic_chants.api.magic;
 
 import com.mojang.serialization.Codec;
 import io.github.hutuneko.magic_chants.magic.addition.MagicSpend;

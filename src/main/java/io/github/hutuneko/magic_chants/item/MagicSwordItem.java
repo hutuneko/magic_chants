@@ -1,43 +1,43 @@
-package io.magic_chants.item;
+package io.github.hutuneko.magic_chants.item;
 
 import io.github.hutuneko.magic_chants.api.magic.MagicCast;
 import io.github.hutuneko.magic_chants.magic.action.MagicBindSword;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MagicSwordItem extends SwordItem {
-    public MagicSwordItem(Tier tier, int attackDamageModifier, float attackSpeedModifier, Properties props) {
-        super(tier, attackDamageModifier, attackSpeedModifier, props);
+public class MagicSwordItem extends Item {
+    public MagicSwordItem(Properties props) {
+        super(props.sword(ToolMaterial.IRON,2,1));
     }
 
     @Override
-    public boolean hurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, LivingEntity attacker) {
-        if (!attacker.level().isClientSide() && attacker instanceof ServerPlayer sp) {
-            CompoundTag tag = stack.getTag();
-            if (tag != null && tag.contains(MagicBindSword.NBT_KEY_CHAIN)) {
+    public void postHurtEnemy(@NotNull ItemStack stack, @NotNull LivingEntity target, @NonNull LivingEntity attacker) {
+        var cdata = stack.get(DataComponents.CUSTOM_DATA);
+        if (cdata == null) return;
+        CompoundTag tag = cdata.copyTag();
+        if (tag.contains(MagicBindSword.NBT_KEY_CHAIN)) {
+            if (attacker.level() instanceof ServerLevel && attacker instanceof ServerPlayer sp) {
                 // チェーン復元（既存）
-                List<MagicCast.Step> steps = readChain(tag.getList(MagicBindSword.NBT_KEY_CHAIN, Tag.TAG_COMPOUND));
+                var chain = tag.getList(MagicBindSword.NBT_KEY_CHAIN).orElse(null);
+                if (chain == null) return;
+                List<MagicCast.Step> steps = readChain(chain);
                 // ★ NBT から詠唱テキスト取得（無ければ空文字）
-                String chantRaw = tag.contains("magic_chants:chant_raw", Tag.TAG_STRING)
-                        ? tag.getString("magic_chants:chant_raw")
-                        : "";
+                String chantRaw = tag.getStringOr("magic_chants:chant_raw","");
 
-                // ★ 実行：chantRaw を MagicCast に渡す（Power は MagicCast 側で導出）
                 MagicCast.startChain((ServerLevel) attacker.level(), sp, steps, null, 200, chantRaw,null);
-
-                // 既存：1消費
-                stack.hurtAndBreak(1, sp, p -> p.broadcastBreakEvent(sp.getUsedItemHand()));
+                stack.hurtAndBreak(1,sp,sp.getUsedItemHand());
             }
         }
-        return super.hurtEnemy(stack, target, attacker);
     }
 
 
@@ -45,28 +45,21 @@ public class MagicSwordItem extends SwordItem {
         List<MagicCast.Step> out = new ArrayList<>();
         for (Tag t : list) {
             CompoundTag c = (CompoundTag) t;
-            ResourceLocation id = new ResourceLocation(c.getString("id"));
-            CompoundTag args = c.getCompound("args");
-            out.add(new MagicCast.Step(id, args));
+            Identifier id = Identifier.parse(String.valueOf(c.getString("id")));
+            CompoundTag args = c.getCompound("args").orElse(null);
+            MagicCast.ChantSource source = MagicCast.ChantSource.valueOf(c.getString("source").orElse(""));
+            out.add(new MagicCast.Step(id, args,source));
         }
         return out;
     }
-    private static List<Boolean> readsub(ListTag list) {
-        List<Boolean> out = new ArrayList<>();
-        for (Tag t : list) {
-            CompoundTag c = (CompoundTag) t;
-            Boolean sub = c.getCompound("sub").contains("sub");
-            out.add(sub);
-        }
-        return out;
-    }
-
     @Override
     public int getMaxDamage(ItemStack stack) {
-        CompoundTag tag = stack.getTag();
-        if (tag != null && tag.contains("CustomUses")) {
-            return tag.getInt("CustomUses");
+        var cdata = stack.get(DataComponents.CUSTOM_DATA);
+        if (cdata == null) return super.getMaxDamage(stack);
+        CompoundTag tag = cdata.copyTag();
+        if (tag.contains("CustomUses")) {
+            return tag.getIntOr("CustomUses",super.getMaxDamage(stack));
         }
-        return super.getMaxDamage(stack); // fallback
+        return super.getMaxDamage(stack);
     }
 }

@@ -1,17 +1,11 @@
-package io.magic_chants;
+package io.github.hutuneko.magic_chants;
 
-import io.github.hutuneko.magic_chants.MagicRegister;
-import io.github.hutuneko.magic_chants.ModRegistry;
-import io.github.hutuneko.magic_chants.api.net.MagicNetwork;
 import io.github.hutuneko.magic_chants.api.player.attribute.MagicAttributes;
-import io.github.hutuneko.magic_chants.item.MagicItems;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import io.github.hutuneko.magic_chants.api.player.attribute.magic_power.MagicPowerProvider;
+import net.minecraft.resources.Identifier;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,27 +16,14 @@ public class MagicChants {
 
     // Define mod id in a common place for everything to reference
     public static final String MODID = "magic_chants";
-    public static ResourceLocation rl(String s){
-        return new ResourceLocation(MODID,s);
+    public static Identifier rl(String s){
+        return Identifier.fromNamespaceAndPath(MODID,s);
     }
     public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
-    public MagicChants() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
+    public MagicChants(IEventBus modEventBus, ModContainer modContainer) {
         MagicRegister.init();
-        MagicItems.register(modEventBus);
-        MinecraftForge.EVENT_BUS.register(this);
         ModRegistry.register(modEventBus);
+        MagicPowerProvider.ATTACHMENT_TYPES.register(modEventBus);
         MagicAttributes.ATTRIBUTES.register(modEventBus);
-        modEventBus.addListener(this::setup);
-        modEventBus.addListener(this::clientSetup);
-    }
-    private void setup(final FMLCommonSetupEvent e) {
-        e.enqueueWork(MagicNetwork::init);
-    }
-    private void clientSetup(final FMLClientSetupEvent e) {
-        e.enqueueWork(() -> {
-
-        });
     }
 }

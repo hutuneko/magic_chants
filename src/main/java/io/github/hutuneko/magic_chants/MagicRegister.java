@@ -1,4 +1,4 @@
-package io.magic_chants;
+package io.github.hutuneko.magic_chants;
 
 import io.github.hutuneko.magic_chants.api.magic.MagicClassRegistry;
 import io.github.hutuneko.magic_chants.magic.MagicTest;

@@ -1,12 +1,12 @@
-package io.magic_chants.api.chat;
+package io.github.hutuneko.magic_chants.api.chat;
 
-import io.github.hutuneko.magic_chants.api.chat.net.C2S_CommitMagicPacket;
-import io.github.hutuneko.magic_chants.api.net.MagicNetwork;
+import io.github.hutuneko.magic_chants.api.chat.net.C2SCommitMagicPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 import java.util.UUID;
 
@@ -14,27 +14,26 @@ import java.util.UUID;
 public class MagicChatScreen extends ChatScreen {
     private static final String PREFIX = "#magic ";
     private final UUID itemUuid;
-    private final InteractionHand hand;
     private final ItemStack itemStack;
     private boolean closeSent = false;
 
-    public MagicChatScreen(UUID itemUuid, InteractionHand hand, ItemStack itemStack) {
-        super("");
+    public MagicChatScreen(UUID itemUuid, ItemStack itemStack) {
+        super("",true);
         this.itemUuid = itemUuid;
-        this.hand = hand;
         this.itemStack = itemStack;
     }
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent event) {
+        int keyCode = event.key();
         if (keyCode == 257 || keyCode == 335) { // Enter
             this.handleChatInput(this.input.getValue(), true);
             this.input.setValue("");
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
     @Override
-    public boolean handleChatInput(String text, boolean addToHistory) {
+    public void handleChatInput(String text, boolean addToHistory) {
         // 送信直前に必ず #magic.json を付与
         if (!text.startsWith(PREFIX)) text = PREFIX + text;
 
@@ -42,16 +41,12 @@ public class MagicChatScreen extends ChatScreen {
 
         // 履歴に残す（↑第二引数 addToHistory は自前で扱う）
         if (addToHistory) {
-            if (this.minecraft != null) {
-                this.minecraft.gui.getChat().addRecentChat(text);
-            }
+            this.minecraft.gui.getChat().addRecentChat(text);
         }
 
         // 送信：コマンド or チャット
-        ClientPacketListener connection = null;
-        if (this.minecraft != null) {
-            connection = this.minecraft.getConnection();
-        }
+        ClientPacketListener connection;
+        connection = this.minecraft.getConnection();
         if (connection != null) {
             if (text.startsWith("/")) {
                 // 先頭の / を外して sendCommand（1.20.1）
@@ -63,15 +58,14 @@ public class MagicChatScreen extends ChatScreen {
 
         // 画面は閉じない。入力欄をクリアして続けて打てるようにする
         this.input.setValue("");
-        this.input.setResponder(s -> {}); // （任意）サジェストをリセットしたい場合
+        this.input.setResponder(_ -> {}); // （任意）サジェストをリセットしたい場合
         this.setFocused(this.input);
-        return addToHistory;
     }
     @Override
     public void removed() {
         // 画面が閉じられた時に一度だけ通知
         if (!closeSent && Minecraft.getInstance().player != null) {
-            MagicNetwork.CHANNEL.sendToServer(new C2S_CommitMagicPacket(itemUuid,hand,itemStack));
+            ClientPacketDistributor.sendToServer(new C2SCommitMagicPacket(itemUuid.toString(),itemStack));
             closeSent = true;
         }
         super.removed();

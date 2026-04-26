@@ -1,4 +1,4 @@
-package io.magic_chants.magic.action;
+package io.github.hutuneko.magic_chants.magic.action;
 
 import io.github.hutuneko.magic_chants.api.magic.Keys;
 import io.github.hutuneko.magic_chants.api.magic.Magic;
@@ -21,7 +21,7 @@ public class MagicPower extends Magic {
         if (entity == null) return;
         if (entity instanceof LivingEntity living) {
             System.out.println(power);
-            living.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, (int) (power * 20), (int) (power - 1)));
+            living.addEffect(new MobEffectInstance(MobEffects.HEALTH_BOOST, (int) (power * 20), (int) (power - 1)));
         }
 
     }

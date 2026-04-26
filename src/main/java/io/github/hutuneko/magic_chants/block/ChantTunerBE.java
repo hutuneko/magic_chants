@@ -1,7 +1,8 @@
-package io.magic_chants.block;
+package io.github.hutuneko.magic_chants.block;
 
 import io.github.hutuneko.magic_chants.ModRegistry;
 import io.github.hutuneko.magic_chants.api.block.gui.ChantTunerMenu;
+import io.github.hutuneko.magic_chants.api.util.MagicChantsAPI;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -12,9 +13,11 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
 
 public class ChantTunerBE extends BlockEntity implements MenuProvider {
     // 追記: キャッシュ用フィールド（GUI表示やパケット用に）
@@ -29,7 +32,7 @@ public class ChantTunerBE extends BlockEntity implements MenuProvider {
         protected void onContentsChanged(int slot) {
             super.onContentsChanged(slot);
             setChanged();
-            if (level != null && !level.isClientSide) {
+            if (level != null && !level.isClientSide()) {
                 handleItemChanged(slot, getStackInSlot(slot)); // ←★ NBT読む
             }
         }
@@ -55,7 +58,7 @@ public class ChantTunerBE extends BlockEntity implements MenuProvider {
         }
 
         // 置かれた：NBTを読む
-        var tag = stack.getTag(); // getOrCreateTag() でもOKだが「無い」判定したいので getTag()
+        var tag = MagicChantsAPI.getTag(stack); // getOrCreateTag() でもOKだが「無い」判定したいので getOrCreateTag()
         cachedItemUuid = null;
         cachedUses  = 0;
         cachedPower = 0f;
@@ -68,22 +71,22 @@ public class ChantTunerBE extends BlockEntity implements MenuProvider {
             final String K_POWER = "magic_chants:power";
             final String K_CHANT = "magic_chants:chant_raw";
 
-            if (tag.contains(K_UUID, Tag.TAG_STRING)) {
+            if (tag.contains(K_UUID)) {
                 try {
-                    cachedItemUuid = java.util.UUID.fromString(tag.getString(K_UUID));
+                    cachedItemUuid = UUID.fromString(tag.getString(K_UUID).orElse(""));
                 } catch (IllegalArgumentException ignored) {}
             }
-            if (tag.contains(K_USES, Tag.TAG_INT)) {
-                cachedUses = tag.getInt(K_USES);
+            if (tag.contains(K_USES)) {
+                cachedUses = tag.getInt(K_USES).orElse(0);
             }
             // float は NBT では TAG_FLOAT(5)。double で入れてる場合は TAG_DOUBLE(6) もケア可
-            if (tag.contains(K_POWER, Tag.TAG_FLOAT)) {
-                cachedPower = tag.getFloat(K_POWER);
-            } else if (tag.contains(K_POWER, Tag.TAG_DOUBLE)) {
-                cachedPower = (float) tag.getDouble(K_POWER);
+            if (tag.contains(K_POWER)) {
+                cachedPower = tag.getFloat(K_POWER).orElse(0.0f);
+            } else if (tag.contains(K_POWER)) {
+                cachedPower = tag.getDouble(K_POWER).orElse(0.0).floatValue();
             }
-            if (tag.contains(K_CHANT, Tag.TAG_STRING)) {
-                cachedChant = tag.getString(K_CHANT);
+            if (tag.contains(K_CHANT)) {
+                cachedChant = tag.getString(K_CHANT).orElse("");
             }
         }
 

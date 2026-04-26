@@ -1,4 +1,4 @@
-package io.magic_chants.api.player.attribute.magic_power;
+package io.github.hutuneko.magic_chants.api.player.attribute.magic_power;
 
 public interface IMagicPower {
     double getMP();

@@ -1,10 +1,11 @@
-package io.magic_chants.api.event;
+package io.github.hutuneko.magic_chants.api.event;
 
 import io.github.hutuneko.magic_chants.api.magic.MagicCast;
 import io.github.hutuneko.magic_chants.api.magic.MagicContext;
-import net.minecraftforge.eventbus.api.Event;
+import net.neoforged.bus.api.Event;
+import net.neoforged.bus.api.ICancellableEvent;
 
-public class MagicCastEvent extends Event{
+public class MagicCastEvent extends Event implements ICancellableEvent {
     private MagicContext ctx;
     private final MagicCast.Step step;
     public MagicCastEvent(MagicContext ctx, MagicCast.Step step) {

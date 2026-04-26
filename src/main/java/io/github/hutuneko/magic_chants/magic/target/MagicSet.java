@@ -1,9 +1,8 @@
-package io.magic_chants.magic.target;
+package io.github.hutuneko.magic_chants.magic.target;
 
 import io.github.hutuneko.magic_chants.api.magic.Keys;
 import io.github.hutuneko.magic_chants.api.magic.Magic;
 import io.github.hutuneko.magic_chants.api.magic.MagicContext;
-import io.github.hutuneko.magic_chants.api.magic.SubWithMagic;
 
 public class MagicSet extends Magic {
     @Override

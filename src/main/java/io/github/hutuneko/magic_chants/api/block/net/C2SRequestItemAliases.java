@@ -13,17 +13,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.UUID;
+public record C2SRequestItemAliases(String itemUuid) implements CustomPacketPayload {
 
-public record C2S_RequestItemAliases(String itemUuid) implements CustomPacketPayload {
-
-    public static final Type<C2S_RequestItemAliases> TYPE = new Type<>(
+    public static final Type<C2SRequestItemAliases> TYPE = new Type<>(
             Identifier.fromNamespaceAndPath(MagicChants.MODID, "request_item_aliases")
     );
 
-    public static final StreamCodec<FriendlyByteBuf, C2S_RequestItemAliases> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.STRING_UTF8, C2S_RequestItemAliases::itemUuid,
-            C2S_RequestItemAliases::new
+    public static final StreamCodec<FriendlyByteBuf, C2SRequestItemAliases> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8, C2SRequestItemAliases::itemUuid,
+            C2SRequestItemAliases::new
     );
 
     @Override
@@ -31,16 +29,16 @@ public record C2S_RequestItemAliases(String itemUuid) implements CustomPacketPay
         return TYPE;
     }
 
-    public static void handle(IPayloadContext context) {
+    public static void handle(C2SRequestItemAliases msg,IPayloadContext context) {
         ServerPlayer sp = context.player() instanceof ServerPlayer s ? s : null;
         if (sp == null) return;
 
         context.enqueueWork(() -> {
             ServerLevel sl = sp.level();
-            MagicChants.LOGGER.info("[C2S] req aliases uuid={}", itemUuid);
+            MagicChants.LOGGER.info("[C2S] req aliases uuid={}", msg.itemUuid);
 
             String jsonOut;
-            Object raw = WorldJsonStorage.load(sl, "magics/" + itemUuid + ".json", Object.class);
+            Object raw = WorldJsonStorage.load(sl, "magics/" + msg.itemUuid + ".json", Object.class);
             if (raw == null) {
                 jsonOut = "{\"magics\":[]}";
             } else {
@@ -50,7 +48,7 @@ public record C2S_RequestItemAliases(String itemUuid) implements CustomPacketPay
             MagicChants.LOGGER.info("[C2S] loaded json length={}", jsonOut.length());
 
             try {
-                PacketDistributor.sendToPlayer(sp, new S2C_SyncItemAliases(itemUuid, jsonOut));
+                PacketDistributor.sendToPlayer(sp, new S2CSyncItemAliases(msg.itemUuid, jsonOut));
                 MagicChants.LOGGER.info("[C2S] sent S2C to {}", sp.getGameProfile().name());
             } catch (Throwable t) {
                 MagicChants.LOGGER.error("[C2S] send failed", t);

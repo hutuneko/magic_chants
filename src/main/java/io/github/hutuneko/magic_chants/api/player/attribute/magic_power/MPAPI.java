@@ -1,30 +1,25 @@
-package io.magic_chants.api.player.attribute.magic_power;
+package io.github.hutuneko.magic_chants.api.player.attribute.magic_power;
 
 import io.github.hutuneko.magic_chants.api.magic.MagicContext;
-import io.github.hutuneko.magic_chants.api.net.MagicNetwork;
-import io.github.hutuneko.magic_chants.api.player.attribute.magic_power.net.S2C_SyncMagicPowerPacket;
-import net.minecraftforge.network.PacketDistributor;
+import io.github.hutuneko.magic_chants.api.player.attribute.magic_power.net.S2CSyncMagicPowerPacket;
+import net.minecraft.server.level.ServerPlayer;
 
 public class MPAPI {
-    private static int mp;
-    public static boolean calculateMpCost(float scorer, MagicContext ctx){
+    public static boolean calculateMpCost(float scorer, MagicContext ctx) {
         int mps = (int) (scorer * 2);
         var player = ctx.player();
-        System.out.println(mps);
-        if (player == null)return false;
-        System.out.println(10);
-        player.getCapability(MagicPowerProvider.MAGIC_POWER).ifPresent(pmp -> mp = (int) pmp.getMP());
-        int a = mp - mps;
+        if (player == null) return false;
+
+        MagicPower pmp = player.getData(MagicPowerProvider.MAGIC_POWER);
+        double mp = pmp.getMP();
+        int a = (int) mp - mps;
         if (a < 0) return false;
-        System.out.println(11);
-        player.getCapability(MagicPowerProvider.MAGIC_POWER).ifPresent(pmp -> {
-            double current = pmp.getMP();
-            pmp.setMP(current - mps); // 5MP 消費
-            MagicNetwork.CHANNEL.send(
-                    PacketDistributor.PLAYER.with(() -> player),
-                    new S2C_SyncMagicPowerPacket(pmp.getMP(), pmp.getMaxMP())
-            );
-        });
+
+        pmp.setMP(mp - mps);
+
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.connection.send(new S2CSyncMagicPowerPacket(pmp.getMP(), pmp.getMaxMP()));
+        }
 
         return true;
     }

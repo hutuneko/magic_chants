@@ -1,4 +1,4 @@
-package io.magic_chants.mixin;
+package io.github.hutuneko.magic_chants.mixin;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.damagesource.DamageSource;
@@ -18,7 +18,7 @@ public abstract class MixinLivingEntity {
         if ((Object)this instanceof ServerPlayer player) {
 
             // カスタムフラグが立っているかチェック
-            if (player.getPersistentData().getBoolean("magic_chants:respawnf")) {
+            if (player.getPersistentData().getBoolean("magic_chants:respawnf").orElse(false)) {
 
                 // ドロップ処理全体をキャンセルし、アイテムが飛ぶのを防ぐ
                 ci.cancel();

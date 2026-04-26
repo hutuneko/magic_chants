@@ -1,4 +1,4 @@
-package io.magic_chants.api.player.effect;
+package io.github.hutuneko.magic_chants.api.player.effect;
 
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;

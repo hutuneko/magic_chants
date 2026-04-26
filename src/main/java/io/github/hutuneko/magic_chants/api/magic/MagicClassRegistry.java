@@ -1,19 +1,19 @@
-package io.magic_chants.api.magic;
+package io.github.hutuneko.magic_chants.api.magic;
 
 import io.github.hutuneko.magic_chants.api.event.MagicCastEvent;
 import io.github.hutuneko.magic_chants.api.player.attribute.magic_power.MPAPI;
 import io.github.hutuneko.magic_chants.api.util.MagicChantsAPI;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
 
 // 2) レジストリ本体（id → Class）
 public final class MagicClassRegistry {
-    private static final Map<ResourceLocation, Class<? extends BaseMagic>> TABLE = new HashMap<>();
+    private static final Map<Identifier, Class<? extends BaseMagic>> TABLE = new HashMap<>();
 
-    public static void registerMagic(ResourceLocation id, Class<? extends BaseMagic> cls) {
+    public static void registerMagic(Identifier id, Class<? extends BaseMagic> cls) {
         if (TABLE.putIfAbsent(id, cls) != null)
             throw new IllegalStateException("Duplicate magic id: " + id);
     }
@@ -37,7 +37,7 @@ public final class MagicClassRegistry {
         MagicChantsAPI.post(event);
     }
 
-    public static boolean call(ResourceLocation id, MagicContext ctx, CompoundTag args, float scorer, boolean sub) {
+    public static boolean call(Identifier id, MagicContext ctx, CompoundTag args, float scorer, boolean sub) {
         Class<? extends BaseMagic> cls;
         cls = TABLE.get(id);
         if (cls == null) {

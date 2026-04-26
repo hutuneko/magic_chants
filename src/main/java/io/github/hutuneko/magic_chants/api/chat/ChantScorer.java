@@ -1,4 +1,4 @@
-package io.magic_chants.api.chat;
+package io.github.hutuneko.magic_chants.api.chat;
 
 import io.github.hutuneko.magic_chants.api.player.attribute.MagicAttributes;
 import net.minecraft.server.level.ServerPlayer;
@@ -33,7 +33,7 @@ public class ChantScorer {
 
         // ⑤ 架空語率（漢字・カタカナ・記号など）
         float fictionScore = (float) fictionScore(normalized);
-        float chantpower = (float) player.getAttributeValue(MagicAttributes.CHANT_POWER.get());
+        float chantpower = (float) player.getAttributeValue(MagicAttributes.CHANT_POWER);
         // 総合スコア（重み平均）
         float finalScore = 10f * (
                 0.25f * repScore +

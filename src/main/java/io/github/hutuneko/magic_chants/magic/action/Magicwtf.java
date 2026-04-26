@@ -1,10 +1,12 @@
-package io.magic_chants.magic.action;
+package io.github.hutuneko.magic_chants.magic.action;
 
 import io.github.hutuneko.magic_chants.api.magic.Magic;
 import io.github.hutuneko.magic_chants.api.magic.MagicContext;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.monster.Creeper;
 
 public class Magicwtf extends Magic {
@@ -13,9 +15,9 @@ public class Magicwtf extends Magic {
         ServerPlayer player = ctx.player();
         ServerLevel level = ctx.level();
         if (player == null || level.isClientSide()) return;
-        Creeper creeper = EntityType.CREEPER.create(level);
+        Creeper creeper = EntityType.CREEPER.create(level, EntitySpawnReason.EVENT);
         if (creeper != null) {
-            creeper.moveTo(player.position());
+            creeper.move(MoverType.SELF,player.position());
             creeper.ignite();
             level.addFreshEntity(creeper);
         }

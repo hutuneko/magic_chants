@@ -1,122 +1,77 @@
-package io.magic_chants.api.net;
+package io.github.hutuneko.magic_chants.api.net;
 
 import io.github.hutuneko.magic_chants.MagicChants;
-import io.github.hutuneko.magic_chants.api.block.net.C2S_RequestItemAliases;
-import io.github.hutuneko.magic_chants.api.block.net.C2S_RewriteAndSaveAliases;
-import io.github.hutuneko.magic_chants.api.block.net.S2C_SyncItemAliases;
-import io.github.hutuneko.magic_chants.api.chat.net.C2S_CommitMagicPacket;
-import io.github.hutuneko.magic_chants.api.player.attribute.magic_power.net.S2C_SyncMagicPowerPacket;
+import io.github.hutuneko.magic_chants.api.block.net.C2SRequestItemAliases;
+import io.github.hutuneko.magic_chants.api.block.net.C2SRewriteAndSaveAliases;
+import io.github.hutuneko.magic_chants.api.block.net.S2CSyncItemAliases;
+import io.github.hutuneko.magic_chants.api.chat.net.C2SCommitMagicPacket;
+import io.github.hutuneko.magic_chants.api.player.attribute.magic_power.net.S2CSyncMagicPowerPacket;
 import io.github.hutuneko.magic_chants.api.player.effect.net.InstantRespawnPacket;
-import io.github.hutuneko.magic_chants.api.player.net.C2S_SetHostLook;
-import io.github.hutuneko.magic_chants.api.player.net.S2C_Rot;
-import net.minecraftforge.api.distmarker.Dist; // ★ 新規インポート
-import net.minecraftforge.fml.DistExecutor;    // ★ 新規インポート
-import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
+@EventBusSubscriber(modid = MagicChants.MODID)
 public final class MagicNetwork {
     private MagicNetwork() {}
 
     private static final String PROTOCOL = "1";
 
-    public static SimpleChannel CHANNEL;
-    private static int nextId = 0; // id の管理をフィールドに移すか、ラムダ内で final を使う
+    @SubscribeEvent
+    public static void register(final RegisterPayloadHandlersEvent event) {
+        final PayloadRegistrar registrar = event.registrar(PROTOCOL);
 
-    public static void init() {
-        CHANNEL = NetworkRegistry.newSimpleChannel(
-                MagicChants.rl("main"),
-                () -> PROTOCOL, PROTOCOL::equals, PROTOCOL::equals
+        // ===== C2S（クライアント→サーバー）=====
+        registrar.playToServer(
+                C2SCommitMagicPacket.TYPE,
+                C2SCommitMagicPacket.STREAM_CODEC,
+                (_, context) -> C2SCommitMagicPacket.handle(context)
         );
 
-        // ★ 修正: C2SとS2Cの登録を分離せず、順に呼び出す
-        registerC2SPackets(nextId); // サーバー・クライアント両方で実行
-        registerS2CPackets(nextId); // サーバー・クライアント両方で実行
+        registrar.playToServer(
+                C2SRewriteAndSaveAliases.TYPE,
+                C2SRewriteAndSaveAliases.STREAM_CODEC,
+                C2SRewriteAndSaveAliases::handle
+        );
 
-        System.out.println("[MagicNetwork] Registered " + nextId + " packets.");
-    }
+        registrar.playToServer(
+                C2SRequestItemAliases.TYPE,
+                C2SRequestItemAliases.STREAM_CODEC,
+                C2SRequestItemAliases::handle
+        );
 
-    // --- C2S パケット登録メソッド (共通) ---
-    private static void registerC2SPackets(int startId) {
-        int id = startId;
+        registrar.playToServer(
+                InstantRespawnPacket.TYPE,
+                InstantRespawnPacket.STREAM_CODEC,
+                (_, context) -> InstantRespawnPacket.handle(context)
+        );
 
-        // C2S（サーバが受信）
-        CHANNEL.messageBuilder(C2S_CommitMagicPacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(C2S_CommitMagicPacket::encode)
-                .decoder(C2S_CommitMagicPacket::decode)
-                .consumerMainThread(C2S_CommitMagicPacket::handle)
-                .add();
+        registrar.playToServer(
+                C2SEntityGet.TYPE,
+                C2SEntityGet.STREAM_CODEC,
+                C2SEntityGet::handle
+        );
 
-        CHANNEL.messageBuilder(C2S_RewriteAndSaveAliases.class, id++, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(C2S_RewriteAndSaveAliases::encode)
-                .decoder(C2S_RewriteAndSaveAliases::decode)
-                .consumerMainThread(C2S_RewriteAndSaveAliases::handle)
-                .add();
+        // ===== S2C（サーバー→クライアント）=====
+        registrar.playToClient(
+                S2CSyncMagicPowerPacket.TYPE,
+                S2CSyncMagicPowerPacket.STREAM_CODEC,
+                S2CSyncMagicPowerPacket::handle
+        );
 
-        CHANNEL.messageBuilder(C2S_RequestItemAliases.class, id++, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(C2S_RequestItemAliases::encode)
-                .decoder(C2S_RequestItemAliases::decode)
-                .consumerMainThread(C2S_RequestItemAliases::handle)
-                .add();
-        CHANNEL.messageBuilder(C2S_SetHostLook.class, id++, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(C2S_SetHostLook::encode)
-                .decoder(C2S_SetHostLook::decode)
-                .consumerMainThread(C2S_SetHostLook::handle)
-                .add();
-        CHANNEL.messageBuilder(InstantRespawnPacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(InstantRespawnPacket::encode)
-                .decoder(InstantRespawnPacket::decode)
-                .consumerMainThread(InstantRespawnPacket::handle)
-                .add();
+        registrar.playToClient(
+                S2CSyncItemAliases.TYPE,
+                S2CSyncItemAliases.STREAM_CODEC,
+                S2CSyncItemAliases::handle
+        );
 
-        CHANNEL.messageBuilder(C2S_EntityGet.class, id++, NetworkDirection.PLAY_TO_SERVER)
-                .encoder(C2S_EntityGet::encode)
-                .decoder(C2S_EntityGet::decode)
-                .consumerMainThread(C2S_EntityGet::handle)
-                .add();
+        registrar.playToClient(
+                S2CEntityGet.TYPE,
+                S2CEntityGet.STREAM_CODEC,
+                S2CEntityGet::handle
+        );
 
-        MagicNetwork.nextId = id; // id の最終値を更新
-    }
-
-    // --- S2C パケット登録メソッド (クライアント専用) ---
-    private static void registerS2CPackets(int startId) {
-        // C2Sの後に続くIDから開始
-        int id = startId;
-
-        // S2C（クライアントが受信）
-        CHANNEL.messageBuilder(S2C_SyncMagicPowerPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(S2C_SyncMagicPowerPacket::encode)
-                .decoder(S2C_SyncMagicPowerPacket::decode)
-                .consumerMainThread(S2C_SyncMagicPowerPacket::handle)
-                .add();
-
-        CHANNEL.messageBuilder(S2C_SyncItemAliases.class, id++, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(S2C_SyncItemAliases::encode)
-                .decoder(S2C_SyncItemAliases::decode)
-                // ★ 同様に隔離
-                .consumerMainThread((msg, ctx) -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
-                        S2C_SyncItemAliases.handle(msg, ctx)
-                ))
-                .add();
-
-        CHANNEL.messageBuilder(S2C_Rot.class, id++, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(S2C_Rot::encode)
-                .decoder(S2C_Rot::decode)
-                // ★ 同様に隔離
-                .consumerMainThread((msg, ctx) -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
-                        S2C_Rot.handle(msg, ctx)
-                ))
-                .add();
-
-        CHANNEL.messageBuilder(S2C_EntityGet.class, id++, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(S2C_EntityGet::encode)
-                .decoder(S2C_EntityGet::decode)
-                // ★ 同様に隔離
-                .consumerMainThread((msg, ctx) -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () ->
-                        S2C_EntityGet.handle(msg, ctx)
-                ))
-                .add();
-
-        MagicNetwork.nextId = id; // id の最終値を更新
+        MagicChants.LOGGER.info("[MagicNetwork] Registered all packets.");
     }
 }

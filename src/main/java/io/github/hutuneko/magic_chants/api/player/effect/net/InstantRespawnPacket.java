@@ -1,25 +1,36 @@
-package io.magic_chants.api.player.effect.net;
+package io.github.hutuneko.magic_chants.api.player.effect.net;
 
+import io.github.hutuneko.magic_chants.MagicChants;
 import io.github.hutuneko.magic_chants.api.player.effect.RespawnHandler;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-import java.util.function.Supplier;
+public record InstantRespawnPacket() implements CustomPacketPayload {
 
-public class InstantRespawnPacket {
-    public InstantRespawnPacket() {}
+    public static final Type<InstantRespawnPacket> TYPE = new Type<>(
+            Identifier.fromNamespaceAndPath(MagicChants.MODID, "instant_respawn")
+    );
 
-    public static void encode(InstantRespawnPacket msg, FriendlyByteBuf buf) {}
-    public static InstantRespawnPacket decode(FriendlyByteBuf buf) { return new InstantRespawnPacket(); }
+    // データがないのでUnit型を使う（空のパケット）
+    public static final StreamCodec<FriendlyByteBuf, InstantRespawnPacket> STREAM_CODEC = StreamCodec.unit(
+            new InstantRespawnPacket()
+    );
 
-    public static void handle(InstantRespawnPacket msg, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ServerPlayer player = ctx.get().getSender();
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
+    public static void handle(IPayloadContext context) {
+        context.enqueueWork(() -> {
+            ServerPlayer player = context.player() instanceof ServerPlayer s ? s : null;
             if (player != null) {
                 RespawnHandler.respawnNow(player);
             }
         });
-        ctx.get().setPacketHandled(true);
     }
 }
