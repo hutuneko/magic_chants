@@ -1,0 +1,248 @@
+{
+  "magics": [
+    {
+      "chant": [
+        { "type": "regex", "pattern": "^剣" },
+        { "type": "regex", "pattern": "^sword" }
+      ],
+      "steps": [
+        { "id": "magic_chants:magic_bind_sword"}
+      ]
+    },
+    {
+      "chant": [
+        { "type": "regex", "pattern": "^遅延" },
+        { "type": "regex", "pattern": "^delay" }
+      ],
+      "steps": [
+        { "id": "magic_chants:magic_delay"}
+      ]
+    },
+    {
+      "chant": "爆破",
+      "steps": [
+        { "id": "magic_chants:magic_explosion" }
+      ]
+    },
+    {
+      "chant": "explosion",
+      "steps": [
+        { "id": "magic_chants:magic_explosion" }
+      ]
+    },
+    {
+      "chant": "移動",
+      "steps": [
+        { "id": "magic_chants:magic_move" }
+      ]
+    },
+    {
+      "chant": "move",
+      "steps": [
+        { "id": "magic_chants:magic_move" }
+      ]
+    },
+    {
+      "chant": "増殖",
+      "steps": [
+        { "id": "magic_chants:magic_repeat" }
+      ]
+    },
+    {
+      "chant": "repeat",
+      "steps": [
+        { "id": "magic_chants:magic_repeat" }
+      ]
+    },
+    {
+      "chant": "視線",
+      "steps": [
+        { "id": "magic_chants:magic_selfeyes" }
+      ]
+    },
+    {
+      "chant": "eyespos",
+      "steps": [
+        { "id": "magic_chants:magic_selfeyes" }
+      ]
+    },
+    {
+      "chant": "自分",
+      "steps": [
+        { "id": "magic_chants:magic_self" }
+      ]
+    },
+    {
+      "chant": "self",
+      "steps": [
+        { "id": "magic_chants:magic_self" }
+      ]
+    },
+    {
+      "chant": "座標",
+      "steps": [
+        { "id": "magic_chants:magic_selfpos" }
+      ]
+    },
+    {
+      "chant": "pos",
+      "steps": [
+        { "id": "magic_chants:magic_selfpos" }
+      ]
+    },
+    {
+      "chant": "対象",
+      "steps": [
+        { "id": "magic_chants:magic_target" }
+      ]
+    },
+    {
+      "chant": "target",
+      "steps": [
+        { "id": "magic_chants:magic_target" }
+      ]
+    },
+    {
+      "chant": "対象座標",
+      "steps": [
+        { "id": "magic_chants:magic_targetpos" }
+      ]
+    },
+    {
+      "chant": "targetpos",
+      "steps": [
+        { "id": "magic_chants:magic_targetpos" }
+      ]
+    },
+    {
+      "chant": "テレポート",
+      "steps": [
+        { "id": "magic_chants:magic_teleport" }
+      ]
+    },
+    {
+      "chant": "teleport",
+      "steps": [
+        { "id": "magic_chants:magic_teleport" }
+      ]
+    },
+    {
+      "chant": "雷",
+      "steps": [
+        { "id": "magic_chants:magic_thunder" }
+      ]
+    },
+    {
+      "chant": "thunder",
+      "steps": [
+        { "id": "magic_chants:magic_thunder" }
+      ]
+    },
+    {
+      "chant": "わとふぁ",
+      "steps": [
+        { "id": "magic_chants:magic_wtf" }
+      ]
+    },
+    {
+      "chant": "wtf",
+      "steps": [
+        { "id": "magic_chants:magic_wtf" }
+      ]
+    },
+    {
+      "chant": "kill",
+      "steps": [
+        { "id": "magic_chants:magic_kill" }
+    ]
+    },
+    {
+      "chant": "再演",
+      "steps": [{ "id": "magic_chants:magic_replay" }]
+    },
+    {
+      "chant": "replay",
+      "steps": [{ "id": "magic_chants:magic_replay" }]
+    },
+    {
+      "chant": "ウィザー",
+      "steps": [{ "id": "magic_chants:magic_exhaustion" }]
+    },
+    {
+      "chant": "wither",
+      "steps": [{ "id": "magic_chants:magic_exhaustion" }]
+    },
+    {
+      "chant": "破壊",
+      "steps": [{ "id": "magic_chants:magic_break" }]
+    },
+    {
+      "chant": "break",
+      "steps": [{ "id": "magic_chants:magic_break" }]
+    },
+    {
+      "chant": "タイトル",
+      "steps": [{ "id": "magic_chants:magic_title" }]
+    },
+    {
+      "chant": "title",
+      "steps": [{ "id": "magic_chants:magic_title" }]
+    },
+    {
+    "chant": "消費",
+    "steps": [{ "id": "magic_chants:magic_spend" }]
+    },
+    {
+      "chant": "spend",
+      "steps": [{ "id": "magic_chants:magic_spend" }]
+    },
+    {
+      "chant": "経験値",
+      "steps": [{ "id": "magic_chants:magic_getexperience" }]
+    },
+    {
+      "chant": "experience",
+      "steps": [{ "id": "magic_chants:magic_getexperience" }]
+    },
+    {
+      "chant": "生命力",
+      "steps": [{ "id": "magic_chants:magic_gethealth" }]
+    },
+    {
+      "chant": "health",
+      "steps": [{ "id": "magic_chants:magic_gethealth" }]
+    },
+    {
+      "chant": "インスタント蘇生",
+      "steps": [{ "id": "magic_chants:magic_insrespawn" }]
+    },
+    {
+      "chant": "insrespawn",
+      "steps": [{ "id": "magic_chants:magic_insrespawn" }]
+    },
+    {
+      "chant": "魔法地雷",
+      "steps": [{ "id": "magic_chants:magic_landmine" }]
+    },
+    {
+      "chant": "landmine",
+      "steps": [{ "id": "magic_chants:magic_landmine" }]
+    },
+    {
+      "chant": "召喚",
+      "steps": [{ "id": "magic_chants:magic_summon" }]
+    },
+    {
+      "chant": "summon",
+      "steps": [{ "id": "magic_chants:magic_summon" }]
+    },
+    {
+      "chant": "と",
+      "steps": [{ "id": "magic_chants:magic_and" }]
+    },
+    {
+      "chant": "and",
+      "steps": [{ "id": "magic_chants:magic_and" }]
+    }
+  ]
+}

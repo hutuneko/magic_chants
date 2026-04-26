@@ -1,0 +1,60 @@
+package io.github.hutuneko.magic_chants.api.block.net;
+
+import io.github.hutuneko.magic_chants.MagicChants;
+import io.github.hutuneko.magic_chants.api.file.AliasRewriter;
+import io.github.hutuneko.magic_chants.api.file.WorldJsonStorage;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+
+import java.util.UUID;
+
+public record C2S_RequestItemAliases(String itemUuid) implements CustomPacketPayload {
+
+    public static final Type<C2S_RequestItemAliases> TYPE = new Type<>(
+            Identifier.fromNamespaceAndPath(MagicChants.MODID, "request_item_aliases")
+    );
+
+    public static final StreamCodec<FriendlyByteBuf, C2S_RequestItemAliases> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8, C2S_RequestItemAliases::itemUuid,
+            C2S_RequestItemAliases::new
+    );
+
+    @Override
+    public Type<? extends CustomPacketPayload> type() {
+        return TYPE;
+    }
+
+    public static void handle(IPayloadContext context) {
+        ServerPlayer sp = context.player() instanceof ServerPlayer s ? s : null;
+        if (sp == null) return;
+
+        context.enqueueWork(() -> {
+            ServerLevel sl = sp.level();
+            MagicChants.LOGGER.info("[C2S] req aliases uuid={}", itemUuid);
+
+            String jsonOut;
+            Object raw = WorldJsonStorage.load(sl, "magics/" + itemUuid + ".json", Object.class);
+            if (raw == null) {
+                jsonOut = "{\"magics\":[]}";
+            } else {
+                jsonOut = AliasRewriter.toAliasLinesFromMagicsA(raw);
+            }
+
+            MagicChants.LOGGER.info("[C2S] loaded json length={}", jsonOut.length());
+
+            try {
+                PacketDistributor.sendToPlayer(sp, new S2C_SyncItemAliases(itemUuid, jsonOut));
+                MagicChants.LOGGER.info("[C2S] sent S2C to {}", sp.getGameProfile().name());
+            } catch (Throwable t) {
+                MagicChants.LOGGER.error("[C2S] send failed", t);
+            }
+        });
+    }
+}

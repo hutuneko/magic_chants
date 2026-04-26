@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.github.hutuneko.magic_chants.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "MagicChants-126.1.2.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

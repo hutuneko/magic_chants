@@ -1,0 +1,8 @@
+{
+  "item.magic_chants.magic_wand": "MagicWand",
+  "effect.magic_chants.instant_respawn": "InsRespawn",
+  "effect.magic_chants.disguise_creative": "DisCreative",
+  "magic_chants.noeffect.sub": "isNoSubEffect",
+  "magic_chants.noeffect.main": "isNoMainEffect"
+
+}
