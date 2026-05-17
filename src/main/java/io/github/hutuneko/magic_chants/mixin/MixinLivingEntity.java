@@ -1,5 +1,6 @@
 package io.github.hutuneko.magic_chants.mixin;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.server.level.ServerPlayer;
@@ -13,7 +14,7 @@ public abstract class MixinLivingEntity {
 
     // dropAllDeathLootメソッドの開始時にフックし、処理をキャンセルします
     @Inject(method = "dropAllDeathLoot", at = @At("HEAD"), cancellable = true)
-    private void magic_chants_preventDrops(DamageSource p_21192_, CallbackInfo ci) {
+    private void magic_chants_preventDrops(ServerLevel level, DamageSource source, CallbackInfo ci) {
         // Playerエンティティであり、かつサーバー側でのみ処理します
         if ((Object)this instanceof ServerPlayer player) {
 
